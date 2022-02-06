@@ -66,7 +66,7 @@ func UpdateSet(s *Set) error {
 func DeleteSet(id int) error {
     for i, s := range sets {
         if s.ID == id {
-            sets = append(sets[i:], sets[i+1])
+            sets = append(sets[:i], sets[i+1:]...)
             return nil
         }
     }
