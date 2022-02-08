@@ -31,8 +31,8 @@ func AddSet(s *Set) {
 		return
 	}
 
-	maxID := sets[len(sets)-1].ID
-	s.ID = maxID + 1
+
+    s.ID = nextID()
 	sets = append(sets, s)
 
 	return
@@ -52,9 +52,10 @@ func SetByID(id int) (*Set, error) {
 	return nil, ErrNotFound
 }
 
-func UpdateSet(s *Set) error {
+func UpdateSet(id int, s *Set) error {
 	for i, v := range sets {
-		if s.ID == v.ID {
+		if id == v.ID {
+            s.ID = id
 			sets[i] = s
 			return nil
 		}
@@ -72,4 +73,13 @@ func DeleteSet(id int) error {
 	}
 
 	return ErrNotFound
+}
+
+
+func nextID() int {
+    if len(sets) == 0 {
+        return 1
+    }
+	maxID := sets[len(sets)-1].ID
+	return maxID + 1
 }

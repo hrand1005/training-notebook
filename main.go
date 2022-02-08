@@ -15,7 +15,7 @@ func main() {
 	setHandler := handler.NewSet(logger)
 
 	serveMux := http.NewServeMux()
-	serveMux.Handle("/sets", setHandler)
+	serveMux.Handle("/", setHandler)
 
 	server := &http.Server{
 		Addr:         ":8080",

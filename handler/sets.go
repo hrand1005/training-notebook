@@ -4,7 +4,8 @@ import (
 	//"fmt"
 	"log"
 	"net/http"
-	//"strconv"
+	"strconv"
+    "regexp"
 
 	"github.com/hrand1005/training-notebook/data"
 )
@@ -24,7 +25,23 @@ func (s *Set) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		s.Create(rw, r)
 	case http.MethodPut:
-		s.Update(rw, r)
+        rule := regexp.MustCompile(`/([0-9]+)`)
+        capture := rule.FindAllStringSubmatch(r.URL.Path, -1)
+        if len(capture) != 1 || len(capture[0]) != 2 {
+            s.logger.Printf("Invalid URI: %v", r.URL.Path)
+            http.Error(rw, "could not capture valid id from request URI", http.StatusBadRequest)
+            return
+        }
+
+        id, err := strconv.Atoi(capture[0][1])
+        if err != nil {
+            s.logger.Println("Invalid URI, cannot convert to integer", capture[0][1])
+            http.Error(rw, "could not capture valid id from request URI", http.StatusBadRequest)
+            return
+        }
+
+		s.Update(id, rw, r)
+
 	/*case http.MethodDelete:
 	  s.Delete(rw, r)*/
 	default:
@@ -34,20 +51,21 @@ func (s *Set) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Set) ReadAll(rw http.ResponseWriter, r *http.Request) {
+    s.logger.Println("Reading All sets")
+
 	if err := data.ToJSON(data.Sets(), rw); err != nil {
-		s.logger.Printf("could not serialize sets to json: %v", err)
-		rw.WriteHeader(http.StatusBadRequest)
+        http.Error(rw, "could not serialize sets to json", http.StatusBadRequest)
 	}
 
 	return
 }
 
 func (s *Set) Create(rw http.ResponseWriter, r *http.Request) {
+    s.logger.Println("Creating set")
 	var newSet data.Set
 
 	if err := data.FromJSON(&newSet, r.Body); err != nil {
-		s.logger.Printf("could not bind json to set: %v", err)
-		rw.WriteHeader(http.StatusBadRequest)
+        http.Error(rw, "could not bind json to set", http.StatusBadRequest)
 		return
 	}
 	// assigns ID to newSet
@@ -55,25 +73,29 @@ func (s *Set) Create(rw http.ResponseWriter, r *http.Request) {
 
 	rw.WriteHeader(http.StatusCreated)
 	data.ToJSON(newSet, rw)
+    s.logger.Printf("Created set: %#v\n", newSet)
 	return
 }
 
-func (s *Set) Update(rw http.ResponseWriter, r *http.Request) {
+// This should be the handler for a URI that ends with /id
+// ID fields, if not intended to be updated by the user, should not be present
+// in the body of the request. 
+func (s *Set) Update(id int, rw http.ResponseWriter, r *http.Request) {
+    s.logger.Println("Updating set")
 	var newSet data.Set
 
 	if err := data.FromJSON(&newSet, r.Body); err != nil {
-		s.logger.Printf("could not bind json to set: %v", err)
-		rw.WriteHeader(http.StatusBadRequest)
+        http.Error(rw, "could not bind json to set", http.StatusBadRequest)
 		return
 	}
 
-	if err := data.UpdateSet(&newSet); err != nil {
-		s.logger.Printf("could not update set: %v", err)
-		rw.WriteHeader(http.StatusNotFound)
+	if err := data.UpdateSet(id, &newSet); err != nil {
+        http.Error(rw, "could not find set", http.StatusNotFound)
 		return
 	}
 
 	data.ToJSON(newSet, rw)
+    s.logger.Printf("Updated set: %#v\n", newSet)
 	return
 }
 
