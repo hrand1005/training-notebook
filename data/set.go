@@ -52,9 +52,10 @@ func SetByID(id int) (*Set, error) {
     return nil, ErrNotFound
 }
 
-func UpdateSet(s *Set) error {
+func UpdateSet(id int, s *Set) error {
     for i, v := range sets {
-        if s.ID == v.ID {
+        if id == v.ID {
+            s.ID = id
             sets[i] = s
             return nil
         }

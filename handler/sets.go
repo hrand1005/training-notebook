@@ -43,6 +43,7 @@ func ReadSet(c *gin.Context) {
 }
 
 func UpdateSet(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
 	var newSet data.Set
 
 	if err := c.BindJSON(&newSet); err != nil {
@@ -51,7 +52,7 @@ func UpdateSet(c *gin.Context) {
 	}
 
     // assigns newSet ID of id
-    if err := data.UpdateSet(&newSet); err != nil {
+    if err := data.UpdateSet(id, &newSet); err != nil {
         log.Printf("could not update set: %v", err)
         c.IndentedJSON(http.StatusNotFound, gin.H{"message": "set not found"})
         return

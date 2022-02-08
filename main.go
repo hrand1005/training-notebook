@@ -10,7 +10,7 @@ func main() {
 	router.GET("/sets", handler.ReadSets)
 	router.GET("/sets/:id", handler.ReadSet)
 	router.POST("/sets", handler.CreateSet)
-	router.PUT("/sets", handler.UpdateSet)
+	router.PUT("/sets/:id", handler.UpdateSet)
 	router.DELETE("/sets/:id", handler.DeleteSet)
 
 	router.Run("localhost:8080")
