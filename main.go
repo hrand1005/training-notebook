@@ -8,21 +8,21 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/gin-gonic/gin"
+    "github.com/gorilla/mux"
 	"github.com/hrand1005/training-notebook/handler"
 )
 
 func main() {
 
-	router := gin.New()
+	router := mux.NewRouter()
 
 	router.Use(logger())
 
-	router.GET("/sets", handler.ReadSets)
-	router.GET("/sets/:id", handler.ReadSet)
-	router.POST("/sets", handler.CreateSet)
-	router.PUT("/sets/:id", handler.UpdateSet)
-	router.DELETE("/sets/:id", handler.DeleteSet)
+	router.HandleFunc("/sets", handler.ReadSets).Methods("GET")
+	router.HandleFunc("/sets/{id:[0-9]+}", handler.ReadSet).Methods("GET")
+	router.HandleFunc("/sets", handler.CreateSet).Methods("POST")
+	router.HandleFunc("/sets/{id:[0-9]+}", handler.UpdateSet).Methods("PUT")
+	router.HandleFunc("/sets/{id:[0-9]+}", handler.DeleteSet).Methods("DELETE")
 
 	server := &http.Server{
 		Addr:         ":8080",
@@ -49,19 +49,15 @@ func main() {
 	server.Shutdown(timeout)
 }
 
-func logger() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		log.Printf("Processing %v request, URI: %v", c.Request.Method, c.Request.URL)
+func logger(next http.Handler) http.Handler {
+	return http.HandlerFunc(func (rw http.ResponseWriter, r *http.Request) {
+        log.Printf("Processing %v request, URI: %v\n", r.Method, r.RequestURI)
 		t := time.Now()
+        // assuming no more middleware...
+        next.ServeHTTP(rw, r)
 
-		// before request
-		c.Next()
-
-		// after request
 		latency := time.Since(t)
 		log.Printf("Latency: %v\n", latency)
-
-		status := c.Writer.Status()
-		log.Printf("Response status: %v\n", status)
-	}
+		log.Printf("Response status: %v\n", rw.StatusCode)
+    })
 }
