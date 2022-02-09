@@ -8,7 +8,7 @@ import (
 	"os/signal"
 	"time"
 
-    "github.com/gorilla/mux"
+	"github.com/gorilla/mux"
 	"github.com/hrand1005/training-notebook/handler"
 )
 
@@ -16,7 +16,7 @@ func main() {
 
 	router := mux.NewRouter()
 
-	router.Use(logger())
+	router.Use(logger)
 
 	router.HandleFunc("/sets", handler.ReadSets).Methods("GET")
 	router.HandleFunc("/sets/{id:[0-9]+}", handler.ReadSet).Methods("GET")
@@ -50,14 +50,13 @@ func main() {
 }
 
 func logger(next http.Handler) http.Handler {
-	return http.HandlerFunc(func (rw http.ResponseWriter, r *http.Request) {
-        log.Printf("Processing %v request, URI: %v\n", r.Method, r.RequestURI)
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		log.Printf("Processing %v request, URI: %v\n", r.Method, r.RequestURI)
 		t := time.Now()
-        // assuming no more middleware...
-        next.ServeHTTP(rw, r)
+		// assuming no more middleware...
+		next.ServeHTTP(rw, r)
 
 		latency := time.Since(t)
 		log.Printf("Latency: %v\n", latency)
-		log.Printf("Response status: %v\n", rw.StatusCode)
-    })
+	})
 }
