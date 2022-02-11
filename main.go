@@ -20,6 +20,8 @@ func main() {
 
 	router.GET("/", handler.Home)
 
+	router.GET("/:userID", handler.ReadUser)
+
 	router.GET("/sets", handler.ReadSets)
 	router.GET("/sets/:id", handler.ReadSet)
 	router.POST("/sets", handler.CreateSet)
