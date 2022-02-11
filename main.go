@@ -18,6 +18,8 @@ func main() {
 
 	router.Use(logger())
 
+	router.GET("/", handler.Home)
+
 	router.GET("/sets", handler.ReadSets)
 	router.GET("/sets/:id", handler.ReadSet)
 	router.POST("/sets", handler.CreateSet)
