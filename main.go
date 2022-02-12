@@ -20,7 +20,16 @@ func main() {
 
 	router.GET("/", handler.Home)
 
-	router.GET("/:userID", handler.ReadUser)
+	router.GET("/users/:userID", handler.ReadUser)
+	router.POST("/users", handler.CreateUser)
+	router.PUT("/users/:userID", handler.UpdateUser)
+	router.DELETE("/users/:userID", handler.DeleteUser)
+
+	router.GET("/books", handler.ReadBooks)
+	router.GET("/books/:id", handler.ReadBook)
+	router.POST("/books", handler.CreateBook)
+	router.PUT("/books/:id", handler.UpdateBook)
+	router.DELETE("/books/:id", handler.DeleteBook)
 
 	router.GET("/sets", handler.ReadSets)
 	router.GET("/sets/:id", handler.ReadSet)
