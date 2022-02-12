@@ -16,14 +16,17 @@ func main() {
 
 	router := mux.NewRouter()
 
+	// register middleware on router
 	router.Use(logger)
 
-	router.HandleFunc("/sets", handler.ReadSets).Methods("GET")
-	router.HandleFunc("/sets/{id:[0-9]+}", handler.ReadSet).Methods("GET")
-	router.HandleFunc("/sets", handler.CreateSet).Methods("POST")
-	router.HandleFunc("/sets/{id:[0-9]+}", handler.UpdateSet).Methods("PUT")
-	router.HandleFunc("/sets/{id:[0-9]+}", handler.DeleteSet).Methods("DELETE")
+	// register handlers on router
+	router.HandleFunc("/sets", handler.ReadSets).Methods(http.MethodGet)
+	router.HandleFunc("/sets/{id:[0-9]+}", handler.ReadSet).Methods(http.MethodGet)
+	router.HandleFunc("/sets", handler.CreateSet).Methods(http.MethodPost)
+	router.HandleFunc("/sets/{id:[0-9]+}", handler.UpdateSet).Methods(http.MethodPut)
+	router.HandleFunc("/sets/{id:[0-9]+}", handler.DeleteSet).Methods(http.MethodDelete)
 
+	// configure server
 	server := &http.Server{
 		Addr:         ":8080",
 		Handler:      router,
