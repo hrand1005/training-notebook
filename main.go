@@ -12,7 +12,7 @@ import (
 	"github.com/hrand1005/training-notebook/handler"
 )
 
-func main() {
+func serve(ctx context.Context) {
 
 	// creates router with no default middleware, register logger
 	router := gin.New()
@@ -49,22 +49,47 @@ func main() {
 
 	// start server
 	go func() {
-		if err := server.ListenAndServe(); err != nil {
-			log.Fatal(err)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("server encountered error while listening: %v\n", err)
 		}
 	}()
 
+	log.Println("Server started")
+
+	<-ctx.Done()
+
+	log.Println("Shutting down server")
+
+	// shutdown gracefully with timeout context
+	timeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err = server.Shutdown(timeout); err != nil {
+		log.Fatalf("Failed to shutdown correctly: %v\n", err)
+	}
+
+	return
+}
+
+func main() {
+
 	// define shutdown conditions
-	sigChan := make(chan os.Signal)
+	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt)
 	signal.Notify(sigChan, os.Kill)
 
-	// handle shutdowns gracefully
-	sig := <-sigChan
-	log.Println("Recieved exit signal, proceding with graceful shutdown:", sig)
+	// define cancel context for server
+	ctx, cancel := context.WithCancel(context.Background())
 
-	timeout, _ := context.WithTimeout(context.Background(), 30*time.Second)
-	server.Shutdown(timeout)
+	// await kill signal
+	go func() {
+		sig := <-sigChan
+		log.Printf("Recieved kill signal: %+v\n", sig)
+		cancel()
+	}()
+
+	// start server with cancel context
+	serve(ctx)
 }
 
 func logger() gin.HandlerFunc {
