@@ -15,14 +15,21 @@ import (
 func main() {
 
 	router := gin.New()
-
 	router.Use(logger())
 
-	router.GET("/sets", handler.ReadSets)
-	router.GET("/sets/:id", handler.ReadSet)
-	router.POST("/sets", handler.CreateSet)
-	router.PUT("/sets/:id", handler.UpdateSet)
-	router.DELETE("/sets/:id", handler.DeleteSet)
+	// create a group for the set resource
+	setGroup := router.Group("/sets")
+
+	// group routes that need the same set validation middleware
+	setValidateGroup := setGroup.Group("")
+	setValidateGroup.Use(handler.JSONSetValidator())
+
+	setValidateGroup.POST("/", handler.CreateSet)
+	setValidateGroup.PUT("/:id", handler.UpdateSet)
+
+	setGroup.GET("", handler.ReadSets)
+	setGroup.GET("/:id", handler.ReadSet)
+	setGroup.DELETE("/:id", handler.DeleteSet)
 
 	server := &http.Server{
 		Addr:         ":8080",

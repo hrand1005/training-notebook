@@ -8,13 +8,16 @@ import (
 	"github.com/hrand1005/training-notebook/data"
 )
 
-func CreateSet(c *gin.Context) {
-	var newSet data.Set
+/*
+type Set struct {
 
-	if err := c.BindJSON(&newSet); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "could not bind json to set"})
-		return
-	}
+}
+
+func NewSet(l *log.Logger) *Set {
+}*/
+
+func CreateSet(c *gin.Context) {
+	newSet := c.MustGet("newSet").(data.Set)
 
 	// assigns ID to newSet
 	data.AddSet(&newSet)
@@ -42,12 +45,7 @@ func ReadSet(c *gin.Context) {
 
 func UpdateSet(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
-	var newSet data.Set
-
-	if err := c.BindJSON(&newSet); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "could not bind json to set"})
-		return
-	}
+	newSet := c.MustGet("newSet").(data.Set)
 
 	// assigns newSet ID of id
 	if err := data.UpdateSet(id, &newSet); err != nil {
@@ -69,4 +67,19 @@ func DeleteSet(c *gin.Context) {
 
 	c.IndentedJSON(http.StatusNoContent, gin.H{})
 	return
+}
+
+// Validator middleware validates provided set data
+func JSONSetValidator() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var newSet data.Set
+
+		if err := c.BindJSON(&newSet); err != nil {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "could not bind json to set"})
+			return
+		}
+
+		// set newSet variable
+		c.Set("newSet", newSet)
+	}
 }
