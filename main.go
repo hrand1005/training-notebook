@@ -14,23 +14,31 @@ import (
 
 func main() {
 
+	// creates router with no default middleware, register logger
 	router := gin.New()
 	router.Use(logger())
 
 	// create a group for the set resource
 	setGroup := router.Group("/sets")
 
-	// group routes that need the same set validation middleware
+	// the set handler contains CRUD operations for the set resource
+	setHandler, err := handler.NewSet()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// POST and PUT requests require JSONValidation
 	setValidateGroup := setGroup.Group("")
-	setValidateGroup.Use(handler.JSONSetValidator())
+	setValidateGroup.Use(setHandler.JSONValidator())
+	setValidateGroup.POST("/", setHandler.Create)
+	setValidateGroup.PUT("/:id", setHandler.Update)
 
-	setValidateGroup.POST("/", handler.CreateSet)
-	setValidateGroup.PUT("/:id", handler.UpdateSet)
+	// GET and DELETE requests do not require JSONValidation
+	setGroup.GET("", setHandler.ReadAll)
+	setGroup.GET("/:id", setHandler.Read)
+	setGroup.DELETE("/:id", setHandler.Delete)
 
-	setGroup.GET("", handler.ReadSets)
-	setGroup.GET("/:id", handler.ReadSet)
-	setGroup.DELETE("/:id", handler.DeleteSet)
-
+	// configure server with gin router
 	server := &http.Server{
 		Addr:         ":8080",
 		Handler:      router,
@@ -39,16 +47,19 @@ func main() {
 		WriteTimeout: 1 * time.Second,
 	}
 
+	// start server
 	go func() {
 		if err := server.ListenAndServe(); err != nil {
 			log.Fatal(err)
 		}
 	}()
 
+	// define shutdown conditions
 	sigChan := make(chan os.Signal)
 	signal.Notify(sigChan, os.Interrupt)
 	signal.Notify(sigChan, os.Kill)
 
+	// handle shutdowns gracefully
 	sig := <-sigChan
 	log.Println("Recieved exit signal, proceding with graceful shutdown:", sig)
 
@@ -58,10 +69,10 @@ func main() {
 
 func logger() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// before request
 		log.Printf("Processing %v request, URI: %v", c.Request.Method, c.Request.URL)
 		t := time.Now()
 
-		// before request
 		c.Next()
 
 		// after request

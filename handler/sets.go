@@ -1,22 +1,33 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 	"github.com/hrand1005/training-notebook/data"
 )
 
-/*
-type Set struct {
+type set struct{}
 
+// NewSet registers custom validators with the validator engine and returns the
+// handler for the set resource.
+func NewSet() (*set, error) {
+	// register set validators
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("movement", data.MovementValidator)
+		return &set{}, nil
+	}
+
+	return nil, errors.New("failed to access validator engine")
 }
 
-func NewSet(l *log.Logger) *Set {
-}*/
-
-func CreateSet(c *gin.Context) {
+// Create is the handler for create requests on the set resource.
+// Requires JSONValidator to be registered with the router group.
+func (s *set) Create(c *gin.Context) {
 	newSet := c.MustGet("newSet").(data.Set)
 
 	// assigns ID to newSet
@@ -25,25 +36,32 @@ func CreateSet(c *gin.Context) {
 	return
 }
 
-func ReadSets(c *gin.Context) {
+// ReadAll is the handler for read requests on the set resource where no id is
+// specified.
+func (s *set) ReadAll(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, data.Sets())
 	return
 }
 
-func ReadSet(c *gin.Context) {
+// Read is the handler for read requests on the set resource where an id is
+// specified.
+func (s *set) Read(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 
-	s, err := data.SetByID(id)
+	r, err := data.SetByID(id)
 	if err != nil {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "set not found"})
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, s)
+	c.IndentedJSON(http.StatusOK, r)
 	return
 }
 
-func UpdateSet(c *gin.Context) {
+// Update is the handler for update requests on the set resource. An id must be
+// specified.
+// Requires JSONValidator to be registered with the router group.
+func (s *set) Update(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 	newSet := c.MustGet("newSet").(data.Set)
 
@@ -57,7 +75,9 @@ func UpdateSet(c *gin.Context) {
 	return
 }
 
-func DeleteSet(c *gin.Context) {
+// Delete is the handler for delete requests on the set resource. An id must be
+// specified.
+func (s *set) Delete(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 
 	if err := data.DeleteSet(id); err != nil {
@@ -69,13 +89,15 @@ func DeleteSet(c *gin.Context) {
 	return
 }
 
-// Validator middleware validates provided set data
-func JSONSetValidator() gin.HandlerFunc {
+// JSONValidator is middleware that validates set data in the request body.
+// This must be registered with the router group in order for Creates and
+// Updates on this resource.
+func (s *set) JSONValidator() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var newSet data.Set
 
 		if err := c.BindJSON(&newSet); err != nil {
-			c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "could not bind json to set"})
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			return
 		}
 
