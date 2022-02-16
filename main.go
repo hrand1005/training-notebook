@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-openapi/runtime/middleware"
 	"github.com/hrand1005/training-notebook/handler"
 )
 
@@ -37,6 +38,13 @@ func serve(ctx context.Context) {
 	setGroup.GET("", setHandler.ReadAll)
 	setGroup.GET("/:id", setHandler.Read)
 	setGroup.DELETE("/:id", setHandler.Delete)
+
+	// go-openapi serve docs
+	docOptions := middleware.RedocOpts{SpecURL: "/swagger.yaml"}
+	// gin.WrapF converts http.HandlerFunc to gin HandlerFunc middleware
+	docHandler := gin.WrapH(middleware.Redoc(docOptions, nil))
+	router.GET("/docs", docHandler)
+	router.StaticFile("/swagger.yaml", "./swagger.yaml")
 
 	// configure server with gin router
 	server := &http.Server{

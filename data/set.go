@@ -9,7 +9,13 @@ import (
 // ErrNotFound should be returned when the resource does not exist.
 var ErrNotFound = errors.New("resource not found")
 
+// Set defines the structure for an API set
+// swagger:model
 type Set struct {
+	// the id for this set
+	//
+	// required: true
+	// min: 1
 	ID            int     `json:"id"`
 	Movement      string  `json:"movement" binding:"movement"`
 	Volume        float64 `json:"volume" binding:"gt=0"`
