@@ -2,6 +2,12 @@ basePath: /
 consumes:
 - application/json
 definitions:
+  H:
+    additionalProperties:
+      type: object
+    description: H is a shortcut for map[string]interface{}
+    type: object
+    x-go-package: github.com/gin-gonic/gin
   Set:
     description: Set defines the structure for an API set
     properties:
@@ -62,6 +68,8 @@ paths:
       responses:
         "204":
           $ref: '#/responses/noContent'
+        "404":
+          $ref: '#/responses/errorResponse'
       summary: Delete a set.
       tags:
       - sets
@@ -78,6 +86,8 @@ paths:
       responses:
         "200":
           $ref: '#/responses/setResponse'
+        "404":
+          $ref: '#/responses/errorResponse'
       summary: Read a set.
       tags:
       - sets
@@ -94,12 +104,18 @@ paths:
       responses:
         "200":
           $ref: '#/responses/setResponse'
+        "404":
+          $ref: '#/responses/errorResponse'
       summary: Update a set.
       tags:
       - sets
 produces:
 - application/json
 responses:
+  errorResponse:
+    description: returns generic error message as string
+    schema:
+      $ref: '#/definitions/H'
   setResponse:
     description: returns a set in the response
     schema:

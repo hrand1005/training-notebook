@@ -12,6 +12,7 @@ import (
 // Delete a set.
 // responses:
 //  204: noContent
+//  404: errorResponse
 
 // Delete is the handler for delete requests on the set resource. An id must be
 // specified.

@@ -12,6 +12,8 @@ import (
 // Update a set.
 // responses:
 //  200: setResponse
+//  400: errorResponse
+//  404: errorResponse
 
 // Update is the handler for update requests on the set resource. An id must be
 // specified.

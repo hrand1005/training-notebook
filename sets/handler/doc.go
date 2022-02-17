@@ -15,6 +15,7 @@
 package handler
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/hrand1005/training-notebook/sets/data"
 )
 
@@ -34,6 +35,14 @@ type setsResponse struct {
 	// A list of sets
 	// in: body
 	Body []data.Set
+}
+
+// returns generic error message as string
+// swagger:response errorResponse
+type errorResponse struct {
+	// Description of the erro
+	// in: body
+	Body gin.H
 }
 
 // swagger:parameters readSet

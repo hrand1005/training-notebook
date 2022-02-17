@@ -24,6 +24,7 @@ func (s *set) ReadAll(c *gin.Context) {
 // Read a set.
 // responses:
 //  200: setResponse
+//  404: errorResponse
 
 // Read is the handler for read requests on the set resource where an id is
 // specified.
