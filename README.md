@@ -1,2 +1,3 @@
-# training-notebook
-Simple api for a training (weightlifting) notebook written in go. 
+#training-notebook
+
+Collection of microservices for a training notebook api.
