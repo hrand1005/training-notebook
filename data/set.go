@@ -37,16 +37,6 @@ var MovementValidator validator.Func = func(fl validator.FieldLevel) bool {
 	return true
 }
 
-// Example data, to be replaced with db
-var sets = []*Set{
-	{
-		ID:        1,
-		Movement:  "Squat",
-		Volume:    5,
-		Intensity: 80,
-	},
-}
-
 // Replace with DB logic
 func AddSet(s *Set) {
 	if len(sets) == 0 {
