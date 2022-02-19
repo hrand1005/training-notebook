@@ -46,6 +46,14 @@ func serve(ctx context.Context) {
 	router.GET("/docs", docHandler)
 	router.StaticFile("/swagger.yaml", "./swagger.yaml")
 
+	// CORS example
+	// import github.com/gin-contrib/cors
+	/*
+	   corsConfig := cors.DefaultConfig()
+	   corsConfig.AllowOrigins = []string{"http://localhost:3000"} // frontend consuming api
+	   router.Use(cors.New(corsConfig))
+	*/
+
 	// configure server with gin router
 	server := &http.Server{
 		Addr:         ":8080",
