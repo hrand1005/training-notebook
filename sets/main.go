@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"time"
 
+    "github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/hrand1005/training-notebook/sets/handler"
@@ -18,6 +19,11 @@ func serve(ctx context.Context) {
 	// creates router with no default middleware, register logger
 	router := gin.New()
 	router.Use(logger())
+
+	// CORS example
+    corsConfig := cors.DefaultConfig()
+    corsConfig.AllowOrigins = []string{"http://localhost:3000"} // frontend consuming api
+    router.Use(cors.New(corsConfig))
 
 	// create a group for the set resource
 	setGroup := router.Group("/sets")
@@ -46,13 +52,6 @@ func serve(ctx context.Context) {
 	router.GET("/docs", docHandler)
 	router.StaticFile("/swagger.yaml", "./swagger.yaml")
 
-	// CORS example
-	// import github.com/gin-contrib/cors
-	/*
-	   corsConfig := cors.DefaultConfig()
-	   corsConfig.AllowOrigins = []string{"http://localhost:3000"} // frontend consuming api
-	   router.Use(cors.New(corsConfig))
-	*/
 
 	// configure server with gin router
 	server := &http.Server{
