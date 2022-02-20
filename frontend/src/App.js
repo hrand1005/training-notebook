@@ -5,7 +5,8 @@ import Form from 'react-bootstrap/Form';
 import FormControl from 'react-bootstrap/FormControl';
 import Button from 'react-bootstrap/Button';
 import logo from './logo.svg';
-import SetList from './SetList.js';
+import Example from './components/Example';
+//import SetList from './SetList.js';
 import './App.css';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -25,7 +26,7 @@ function App() {
             </Navbar.Collapse>
           </Container>
       </Navbar>
-      <SetList/>
+      <Example/>
     </div>
   );
 }

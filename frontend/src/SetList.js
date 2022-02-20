@@ -1,12 +1,11 @@
 import React from 'react';
 import Table from 'react-bootstrap/Table';
-import axios from 'axios';
 
 class SetList extends React.Component {
 
     readData() {
         const self = this;
-        axios.get(window.global.api_location+'/sets').then(function(response) {
+        fetch("/sets").then(function(response) {
             console.log(response.data);
             self.setState({sets: response.data});
         }).catch(function (error){
@@ -32,6 +31,9 @@ class SetList extends React.Component {
 
     constructor(props) {
         super(props);
+    }
+
+    componentDidMount() {
         this.readData();
         this.state = {sets: []};
         this.readData = this.readData.bind(this);
