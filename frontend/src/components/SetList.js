@@ -1,15 +1,20 @@
-import React from 'react';
+import React, { Component } from 'react'
 import Table from 'react-bootstrap/Table';
 
 class SetList extends React.Component {
 
-    readData() {
-        const self = this;
-        fetch("/sets").then(function(response) {
-            console.log(response.data);
-            self.setState({sets: response.data});
-        }).catch(function (error){
-            console.log(error);
+    constructor(){
+        super();
+        this.state = {
+            sets: []
+        }
+    }
+
+    componentDidMount(){
+        fetch('/sets')
+        .then(response => response.json())
+        .then(data => {
+            this.setState({sets: data});
         });
     }
 
@@ -27,16 +32,6 @@ class SetList extends React.Component {
         }
 
         return table;
-    }
-
-    constructor(props) {
-        super(props);
-    }
-
-    componentDidMount() {
-        this.readData();
-        this.state = {sets: []};
-        this.readData = this.readData.bind(this);
     }
 
     render() {
