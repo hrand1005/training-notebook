@@ -10,9 +10,9 @@ import (
 	"github.com/hrand1005/training-notebook/data"
 )
 
-// NewHandler registers custom validators with the validator engine and returns the
+// New registers custom validators with the validator engine and returns the
 // handler for the set resource.
-func NewHandler() (*set, error) {
+func New() (*set, error) {
 	// register set validators
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("movement", data.MovementValidator)
