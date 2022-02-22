@@ -4,14 +4,12 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/hrand1005/training-notebook/api/sets"
-	"gopkg.in/yaml.v3"
 )
 
 // Server interface contains start method
@@ -48,47 +46,36 @@ func (s *server) Start(ctx context.Context) {
 }
 
 // buildServer configures server with desired configuration
-func buildServer(srvConf *serverConfig) (Server, error) {
+func buildServer(conf *Config) (Server, error) {
 	router := gin.New()
 
-	// TODO: register resources in a different procedure
-	// TODO: make resource registration configurable
 	// create a group for the set resource
 	setGroup := router.Group("/sets")
 
-	// the set handler contains CRUD operations for the set resource
-	setHandler, err := sets.New()
+	// the set resource contains CRUD operations for sets
+	setResource, err := sets.New()
 	if err != nil {
 		return nil, err
 	}
 
-	// POST and PUT requests require JSONValidation
-	setValidateGroup := setGroup.Group("")
-	setValidateGroup.Use(setHandler.JSONValidator())
-	setValidateGroup.POST("/", setHandler.Create)
-	setValidateGroup.PUT("/:id", setHandler.Update)
+	// registers resource CRUD operation handler funcs on the provided router group
+	setResource.RegisterHandlers(setGroup)
 
-	// GET and DELETE requests do not require JSONValidation
-	setGroup.GET("", setHandler.ReadAll)
-	setGroup.GET("/:id", setHandler.Read)
-	setGroup.DELETE("/:id", setHandler.Delete)
+	// create docs endpoint, register api documentation with SwaggerSpec
+	docsGroup := router.Group("")
+	registerDocs(conf.SwaggerSpec, docsGroup)
 
-	// go-openapi serve docs
-	docOptions := middleware.RedocOpts{SpecURL: "/swagger.yaml"}
-	// gin.WrapF converts http.HandlerFunc to gin HandlerFunc middleware
-	docHandler := gin.WrapH(middleware.Redoc(docOptions, nil))
-	router.GET("/docs", docHandler)
-	router.StaticFile("/swagger.yaml", "./docs/swagger.yaml")
-
-	if srvConf.Prod {
-		registerStaticFiles(router)
+	// we should serve the frontend if in production mode
+	if conf.Prod {
+		registerFrontend(router)
 	}
 
+	// create server using router and configs
 	s := &http.Server{
-		Addr:         srvConf.Port,
-		IdleTimeout:  srvConf.IdleTimeout,
-		ReadTimeout:  srvConf.ReadTimeout,
-		WriteTimeout: srvConf.WriteTimeout,
+		Addr:         conf.Server.Port,
+		IdleTimeout:  conf.Server.IdleTimeout,
+		ReadTimeout:  conf.Server.ReadTimeout,
+		WriteTimeout: conf.Server.WriteTimeout,
 		Handler:      router,
 	}
 
@@ -97,36 +84,18 @@ func buildServer(srvConf *serverConfig) (Server, error) {
 	}, nil
 }
 
-// registerStaticFiles should route our frontend builds
-func registerStaticFiles(r *gin.Engine) {
+// registerDocs creates documentation endpoints for our API using the provided
+// swagger spec at specPath
+func registerDocs(specPath string, g *gin.RouterGroup) {
+	// go-openapi serve docs
+	docOptions := middleware.RedocOpts{SpecURL: "/swagger.yaml"}
+	// gin.WrapF converts http.HandlerFunc to gin HandlerFunc middleware
+	docHandler := gin.WrapH(middleware.Redoc(docOptions, nil))
+	g.GET("/docs", docHandler)
+	g.StaticFile("/swagger.yaml", specPath)
+}
+
+// registerFrontend should route our frontend builds
+func registerFrontend(r *gin.Engine) {
 	r.Use(static.Serve("/", static.LocalFile("./frontend/build", true)))
-}
-
-type serverConfig struct {
-	Port         string        `yaml:"port"`
-	IdleTimeout  time.Duration `yaml:"idle-timeout"`
-	ReadTimeout  time.Duration `yaml:"read-timeout"`
-	WriteTimeout time.Duration `yaml:"write-timeout"`
-	Prod         bool
-}
-
-// loadServerConfig decodes a yaml configuration file, and sets deployment mode
-func loadServerConfig(prodMode bool, configPath string) (*serverConfig, error) {
-	f, err := os.Open(configPath)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	// decode server config
-	srvConf := &serverConfig{}
-	d := yaml.NewDecoder(f)
-
-	if err := d.Decode(srvConf); err != nil {
-		return nil, err
-	}
-
-	srvConf.Prod = prodMode
-
-	return srvConf, nil
 }

@@ -18,7 +18,7 @@ func main() {
 	flag.Parse()
 
 	// load server configs
-	srvConf, err := loadServerConfig(*prodMode, *configFile)
+	srvConf, err := loadConfig(*prodMode, *configFile)
 	if err != nil {
 		log.Fatalf("failed to load server configs from %v: %v", *configFile, err)
 	}

@@ -22,6 +22,19 @@ func New() (*set, error) {
 	return nil, errors.New("failed to access validator engine")
 }
 
+func (s *set) RegisterHandlers(g *gin.RouterGroup) {
+	// Register GET and DELETE requests on routerGroup
+	g.GET("", s.ReadAll)
+	g.GET("/:id", s.Read)
+	g.DELETE("/:id", s.Delete)
+
+	// create a subgroup with JSON validation
+	validateGroup := g.Group("")
+	validateGroup.Use(s.JSONValidator())
+	validateGroup.POST("/", s.Create)
+	validateGroup.PUT("/:id", s.Update)
+}
+
 // JSONValidator is middleware that validates set data in the request body.
 // This must be registered with the router group in order for Creates and
 // Updates on this resource.
