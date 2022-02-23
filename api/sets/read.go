@@ -17,19 +17,23 @@ import (
 // specified.
 func (s *set) ReadAll(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, data.Sets())
-	return
 }
 
 // swagger:route GET /sets/{id} sets readSet
 // Read a set.
 // responses:
 //  200: setResponse
+//  400: errorResponse
 //  404: errorResponse
 
 // Read is the handler for read requests on the set resource where an id is
 // specified.
 func (s *set) Read(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "invalid request parameters"})
+		return
+	}
 
 	r, err := data.SetByID(id)
 	if err != nil {
@@ -38,5 +42,4 @@ func (s *set) Read(c *gin.Context) {
 	}
 
 	c.IndentedJSON(http.StatusOK, r)
-	return
 }
