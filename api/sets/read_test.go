@@ -1,6 +1,7 @@
 package sets
 
 import (
+	"log"
 	"net/http/httptest"
 	"testing"
 
@@ -61,4 +62,42 @@ func TestReadSingleSet(t *testing.T) {
 		}
 		// TODO: compare body
 	}
+}
+
+// TODO: Are there failure cases for ReadAll?
+func TestReadAllSets(t *testing.T) {
+	testCases := []struct {
+		name     string
+		wantCode int
+		//		wantResp *bytes.Buffer
+	}{
+		{
+			name:     "No params returns 200",
+			wantCode: 200,
+			//wantResp:
+		},
+	}
+	for _, v := range testCases {
+		ts, err := New()
+		if err != nil {
+			t.Fail()
+		}
+
+		gin.SetMode(gin.TestMode)
+
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+
+		//c.Params = v.params
+
+		ts.ReadAll(c)
+		log.Printf("ReadAll Result: +%v\n", w)
+
+		if w.Code != v.wantCode {
+			// TODO: print body
+			t.Fatalf("Wanted code: %v\nGot code: %v\n", v.wantCode, w.Code)
+		}
+		// TODO: compare body
+	}
+
 }

@@ -21,5 +21,4 @@ func (s *set) Create(c *gin.Context) {
 	// assigns ID to newSet
 	data.AddSet(&newSet)
 	c.IndentedJSON(http.StatusCreated, newSet)
-	return
 }
