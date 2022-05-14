@@ -55,5 +55,6 @@ func TestCreateSet(t *testing.T) {
 			t.Fatalf("Wanted code: %v\nGot code: %v\n", v.wantCode, w.Code)
 		}
 		// TODO: compare body
+		// TODO: ADD CLEANUP!!!
 	}
 }

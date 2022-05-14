@@ -29,7 +29,7 @@ func TestReadSingleSet(t *testing.T) {
 		},
 		{
 			name:     "Set not found returns 404",
-			params:   []gin.Param{{Key: "id", Value: "2"}},
+			params:   []gin.Param{{Key: "id", Value: "4"}},
 			wantCode: 404,
 			//wantResp:
 		},
