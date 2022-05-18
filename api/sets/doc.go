@@ -19,7 +19,9 @@ import (
 	"github.com/hrand1005/training-notebook/data"
 )
 
-type set struct{}
+type set struct {
+	db data.SetDB
+}
 
 // returns a set in the response
 // swagger:response setResponse

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hrand1005/training-notebook/data"
 )
 
 func TestReadSingleSet(t *testing.T) {
@@ -42,7 +43,8 @@ func TestReadSingleSet(t *testing.T) {
 	}
 
 	for _, v := range testCases {
-		ts, err := New()
+		// create test set object
+		ts, err := New(data.TestSetData)
 		if err != nil {
 			t.Fail()
 		}
@@ -78,7 +80,7 @@ func TestReadAllSets(t *testing.T) {
 		},
 	}
 	for _, v := range testCases {
-		ts, err := New()
+		ts, err := New(data.TestSetData)
 		if err != nil {
 			t.Fail()
 		}

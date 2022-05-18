@@ -13,11 +13,11 @@ import (
 // New registers custom validators with the validator engine and returns the
 // handler for the set resource.
 // TODO: add DB interface param
-func New() (*set, error) {
+func New(db data.SetDB) (*set, error) {
 	// register set validators
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("movement", data.MovementValidator)
-		return &set{}, nil
+		return &set{db: db}, nil
 	}
 
 	return nil, errors.New("failed to access validator engine")

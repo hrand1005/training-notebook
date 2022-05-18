@@ -23,11 +23,10 @@ func (s *set) Update(c *gin.Context) {
 	newSet := c.MustGet("newSet").(data.Set)
 
 	// assigns newSet ID of id
-	if err := data.UpdateSet(id, &newSet); err != nil {
+	if err := s.db.UpdateSet(id, &newSet); err != nil {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "set not found"})
 		return
 	}
 
 	c.IndentedJSON(http.StatusOK, newSet)
-	return
 }

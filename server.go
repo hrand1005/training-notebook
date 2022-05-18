@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/hrand1005/training-notebook/api/sets"
+	"github.com/hrand1005/training-notebook/data"
 )
 
 // Server interface contains start method
@@ -53,7 +54,8 @@ func buildServer(conf *Config) (Server, error) {
 	setGroup := router.Group("/sets")
 
 	// the set resource contains CRUD operations for sets
-	setResource, err := sets.New()
+	// configure with SetDB, an interface for CRUD operations on set data
+	setResource, err := sets.New(data.TestSetData)
 	if err != nil {
 		return nil, err
 	}
