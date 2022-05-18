@@ -1,8 +1,10 @@
 package sets
 
 import (
-	"log"
+	"bytes"
+	"encoding/json"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -10,18 +12,12 @@ import (
 )
 
 func TestReadSingleSet(t *testing.T) {
-
-	// test cases:
-	// id not found
-	// invalid params or smth
-	// success case
-
 	testCases := []struct {
 		name     string
 		data     []*data.Set
 		params   gin.Params
 		wantCode int
-		//		wantResp *bytes.Buffer
+		wantResp bytes.Buffer
 	}{
 		{
 			name:   "Set found returns 200",
@@ -35,7 +31,14 @@ func TestReadSingleSet(t *testing.T) {
 				},
 			},
 			wantCode: 200,
-			//wantResp:
+			wantResp: *bytes.NewBufferString(`
+				{
+					"id": 1,
+					"movement": "Squat",
+					"volume": 5,
+					"intensity": 80
+				}
+			`),
 		},
 		{
 			name:   "Set not found returns 404",
@@ -49,7 +52,9 @@ func TestReadSingleSet(t *testing.T) {
 				},
 			},
 			wantCode: 404,
-			//wantResp:
+			wantResp: *bytes.NewBufferString(`{
+				"message": "set not found"
+			}`),
 		},
 		{
 			name:   "Invalid params returns 400",
@@ -63,43 +68,46 @@ func TestReadSingleSet(t *testing.T) {
 				},
 			},
 			wantCode: 400,
-			//wantResp:
+			wantResp: *bytes.NewBufferString(`{
+				"message": "invalid request parameters"
+			}`),
 		},
 	}
 
 	for _, v := range testCases {
+		// configure test case with data and test context
 		testData := data.NewSetData(v.data)
-
-		// create test set object
 		ts, err := New(testData)
 		if err != nil {
 			t.Fail()
 		}
 
 		gin.SetMode(gin.TestMode)
-
 		w := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(w)
-
 		c.Params = v.params
 
+		// execute Read on test context
 		ts.Read(c)
 
-		if w.Code != v.wantCode {
-			// TODO: print body
+		// check response code
+		if v.wantCode != w.Code {
 			t.Fatalf("Wanted code: %v\nGot code: %v\n", v.wantCode, w.Code)
 		}
-		// TODO: compare body
+
+		// check response body
+		if equal, _ := JSONBytesEqual(v.wantResp.Bytes(), w.Body.Bytes()); !equal {
+			t.Fatalf("Wanted body: %v\nGot body: %v\n", v.wantResp, w.Body)
+		}
 	}
 }
 
-// TODO: Are there failure cases for ReadAll?
 func TestReadAllSets(t *testing.T) {
 	testCases := []struct {
 		name     string
 		data     []*data.Set
 		wantCode int
-		//		wantResp *bytes.Buffer
+		wantResp bytes.Buffer
 	}{
 		{
 			name: "No params returns 200",
@@ -112,32 +120,52 @@ func TestReadAllSets(t *testing.T) {
 				},
 			},
 			wantCode: 200,
-			//wantResp:
+			wantResp: *bytes.NewBufferString(`[
+				{
+					"id": 1,
+					"movement": "Squat",
+					"volume": 5,
+					"intensity": 80
+				}
+			]`),
 		},
 	}
 	for _, v := range testCases {
+		// configure test case with data and test context
 		testData := data.NewSetData(v.data)
-
 		ts, err := New(testData)
 		if err != nil {
 			t.Fail()
 		}
 
 		gin.SetMode(gin.TestMode)
-
 		w := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(w)
 
-		//c.Params = v.params
-
+		// execute ReadAll with test context
 		ts.ReadAll(c)
-		log.Printf("ReadAll Result: +%v\n", w)
 
-		if w.Code != v.wantCode {
-			// TODO: print body
+		// check response code
+		if v.wantCode != w.Code {
 			t.Fatalf("Wanted code: %v\nGot code: %v\n", v.wantCode, w.Code)
 		}
-		// TODO: compare body
+
+		// check response body
+		if equal, _ := JSONBytesEqual(v.wantResp.Bytes(), w.Body.Bytes()); !equal {
+			t.Fatalf("Wanted body: %v\nGot body: %v\n", v.wantResp, w.Body)
+		}
 	}
 
+}
+
+// JSONBytesEqual compares the JSON in two byte slices.
+func JSONBytesEqual(a, b []byte) (bool, error) {
+	var j, j2 interface{}
+	if err := json.Unmarshal(a, &j); err != nil {
+		return false, err
+	}
+	if err := json.Unmarshal(b, &j2); err != nil {
+		return false, err
+	}
+	return reflect.DeepEqual(j2, j), nil
 }
