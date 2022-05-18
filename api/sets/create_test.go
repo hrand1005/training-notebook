@@ -35,7 +35,10 @@ func TestCreateSet(t *testing.T) {
 	}
 
 	for _, v := range testCases {
-		ts, err := New(data.TestSetData)
+		// start with empty setData
+		testData := data.NewSetData(nil)
+
+		ts, err := New(testData)
 		if err != nil {
 			t.Fail()
 		}

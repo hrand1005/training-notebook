@@ -18,33 +18,60 @@ func TestReadSingleSet(t *testing.T) {
 
 	testCases := []struct {
 		name     string
+		data     []*data.Set
 		params   gin.Params
 		wantCode int
 		//		wantResp *bytes.Buffer
 	}{
 		{
-			name:     "Set found returns 200",
-			params:   []gin.Param{{Key: "id", Value: "1"}},
+			name:   "Set found returns 200",
+			params: []gin.Param{{Key: "id", Value: "1"}},
+			data: []*data.Set{
+				{
+					ID:        1,
+					Movement:  "Squat",
+					Volume:    5,
+					Intensity: 80,
+				},
+			},
 			wantCode: 200,
 			//wantResp:
 		},
 		{
-			name:     "Set not found returns 404",
-			params:   []gin.Param{{Key: "id", Value: "4"}},
+			name:   "Set not found returns 404",
+			params: []gin.Param{{Key: "id", Value: "4"}},
+			data: []*data.Set{
+				{
+					ID:        1,
+					Movement:  "Squat",
+					Volume:    5,
+					Intensity: 80,
+				},
+			},
 			wantCode: 404,
 			//wantResp:
 		},
 		{
-			name:     "Invalid params returns 400",
-			params:   []gin.Param{{Key: "bad", Value: "request"}},
+			name:   "Invalid params returns 400",
+			params: []gin.Param{{Key: "bad", Value: "request"}},
+			data: []*data.Set{
+				{
+					ID:        1,
+					Movement:  "Squat",
+					Volume:    5,
+					Intensity: 80,
+				},
+			},
 			wantCode: 400,
 			//wantResp:
 		},
 	}
 
 	for _, v := range testCases {
+		testData := data.NewSetData(v.data)
+
 		// create test set object
-		ts, err := New(data.TestSetData)
+		ts, err := New(testData)
 		if err != nil {
 			t.Fail()
 		}
@@ -70,17 +97,28 @@ func TestReadSingleSet(t *testing.T) {
 func TestReadAllSets(t *testing.T) {
 	testCases := []struct {
 		name     string
+		data     []*data.Set
 		wantCode int
 		//		wantResp *bytes.Buffer
 	}{
 		{
-			name:     "No params returns 200",
+			name: "No params returns 200",
+			data: []*data.Set{
+				{
+					ID:        1,
+					Movement:  "Squat",
+					Volume:    5,
+					Intensity: 80,
+				},
+			},
 			wantCode: 200,
 			//wantResp:
 		},
 	}
 	for _, v := range testCases {
-		ts, err := New(data.TestSetData)
+		testData := data.NewSetData(v.data)
+
+		ts, err := New(testData)
 		if err != nil {
 			t.Fail()
 		}

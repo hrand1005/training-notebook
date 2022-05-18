@@ -43,6 +43,12 @@ type SetDB interface {
 	DeleteSet(id int) error
 }
 
+// NewSetData returns a new setData object initialized with the provided slice of
+// sets. To initialize an empty setData, provide nil.
+func NewSetData(sets []*Set) *setData {
+	return &setData{sets: sets}
+}
+
 // setData contains a slice of Sets and implements the SetData interface
 type setData struct {
 	sets []*Set
@@ -59,8 +65,6 @@ func (sd *setData) AddSet(s *Set) {
 	maxID := sd.sets[len(sd.sets)-1].ID
 	s.ID = maxID + 1
 	sd.sets = append(sd.sets, s)
-
-	return
 }
 
 func (sd *setData) Sets() []*Set {
