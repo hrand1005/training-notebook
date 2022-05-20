@@ -97,7 +97,7 @@ func TestReadSingleSet(t *testing.T) {
 
 		// check response body
 		if equal, _ := JSONBytesEqual(v.wantResp.Bytes(), w.Body.Bytes()); !equal {
-			t.Fatalf("Wanted body: %v\nGot body: %v\n", v.wantResp, w.Body)
+			t.Fatalf("Wanted body: %v\nGot body: %v\n", v.wantResp.String(), w.Body.String())
 		}
 	}
 }
@@ -110,7 +110,7 @@ func TestReadAllSets(t *testing.T) {
 		wantResp bytes.Buffer
 	}{
 		{
-			name: "No params returns 200",
+			name: "1 set returns 200",
 			data: []*data.Set{
 				{
 					ID:        1,
@@ -128,6 +128,11 @@ func TestReadAllSets(t *testing.T) {
 					"intensity": 80
 				}
 			]`),
+		},
+		{
+			name:     "No sets returns 200",
+			wantCode: 200,
+			wantResp: *bytes.NewBufferString(`[]`),
 		},
 	}
 	for _, v := range testCases {
@@ -152,7 +157,7 @@ func TestReadAllSets(t *testing.T) {
 
 		// check response body
 		if equal, _ := JSONBytesEqual(v.wantResp.Bytes(), w.Body.Bytes()); !equal {
-			t.Fatalf("Wanted body: %v\nGot body: %v\n", v.wantResp, w.Body)
+			t.Fatalf("Wanted body: %v\nGot body: %v\n", v.wantResp.String(), w.Body.String())
 		}
 	}
 

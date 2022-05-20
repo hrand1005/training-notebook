@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hrand1005/training-notebook/data"
 )
 
 // swagger:route GET /sets sets readAllSets
@@ -15,6 +16,12 @@ import (
 // ReadAll is the handler for read requests on the set resource where no id is
 // specified.
 func (s *set) ReadAll(c *gin.Context) {
+	sets := s.db.Sets()
+	if len(sets) == 0 {
+		// if no sets are found, return an empty slice
+		c.IndentedJSON(http.StatusOK, []*data.Set{})
+		return
+	}
 	c.IndentedJSON(http.StatusOK, s.db.Sets())
 }
 
