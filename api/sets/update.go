@@ -19,8 +19,14 @@ import (
 // specified.
 // Requires JSONValidator to be registered with the router group.
 func (s *set) Update(c *gin.Context) {
+	var newSet data.Set
+
+	if err := c.BindJSON(&newSet); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+
 	id, _ := strconv.Atoi(c.Param("id"))
-	newSet := c.MustGet("newSet").(data.Set)
 
 	// assigns newSet ID of id
 	if err := s.db.UpdateSet(id, &newSet); err != nil {

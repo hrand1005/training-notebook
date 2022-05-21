@@ -16,7 +16,12 @@ import (
 // Create is the handler for create requests on the set resource.
 // Requires JSONValidator to be registered with the router group.
 func (s *set) Create(c *gin.Context) {
-	newSet := c.MustGet("newSet").(data.Set)
+	var newSet data.Set
+
+	if err := c.BindJSON(&newSet); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
 
 	// assigns ID to newSet
 	s.db.AddSet(&newSet)
