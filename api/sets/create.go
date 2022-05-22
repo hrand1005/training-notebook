@@ -14,7 +14,6 @@ import (
 //  400: errorResponse
 
 // Create is the handler for create requests on the set resource.
-// Requires JSONValidator to be registered with the router group.
 func (s *set) Create(c *gin.Context) {
 	var newSet data.Set
 

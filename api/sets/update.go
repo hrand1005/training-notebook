@@ -17,7 +17,6 @@ import (
 
 // Update is the handler for update requests on the set resource. An id must be
 // specified.
-// Requires JSONValidator to be registered with the router group.
 func (s *set) Update(c *gin.Context) {
 	var newSet data.Set
 
