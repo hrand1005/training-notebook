@@ -8,10 +8,15 @@ import (
 )
 
 type Config struct {
+	Database    DBConfig     `yaml:"database"`
 	Server      ServerConfig `yaml:"server-settings"`
 	SwaggerSpec string       `yaml:"swagger-spec"`
 	// TODO: change Prod field to deployment mode field
 	Prod bool
+}
+
+type DBConfig struct {
+	Path string `yaml:"path"`
 }
 
 type ServerConfig struct {

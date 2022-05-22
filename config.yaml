@@ -1,3 +1,5 @@
+database:
+  path: "./test-database.sqlite"
 server-settings:
   port: ":8080"
   idle-timeout: 120s
