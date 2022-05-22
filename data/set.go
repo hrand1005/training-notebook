@@ -34,11 +34,3 @@ var MovementValidator validator.Func = func(fl validator.FieldLevel) bool {
 	// returns true if valid, else false
 	return len(matches) == 1
 }
-
-type SetDB interface {
-	AddSet(s *Set)
-	Sets() []*Set
-	SetByID(id int) (*Set, error)
-	UpdateSet(id int, s *Set) error
-	DeleteSet(id int) error
-}

@@ -16,7 +16,8 @@ type Config struct {
 }
 
 type DBConfig struct {
-	Path string `yaml:"path"`
+	Path   string `yaml:"path"`
+	IsTest bool   `yaml:"is-test"`
 }
 
 type ServerConfig struct {

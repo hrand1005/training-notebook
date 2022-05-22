@@ -1,4 +1,5 @@
 database:
+  is-test: false
   path: "./test-database.sqlite"
 server-settings:
   port: ":8080"

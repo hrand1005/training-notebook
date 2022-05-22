@@ -1,0 +1,8 @@
+database:
+  is-test: true
+server-settings:
+  port: ":8080"
+  idle-timeout: 120s
+  read-timeout: 1s
+  write-timeout: 1s
+swagger-spec: "./docs/swagger.yaml"
