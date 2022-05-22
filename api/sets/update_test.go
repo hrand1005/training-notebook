@@ -11,38 +11,71 @@ import (
 	"github.com/hrand1005/training-notebook/data"
 )
 
-func TestCreateSet(t *testing.T) {
+func TestUpdateSet(t *testing.T) {
 	testCases := []struct {
-		name        string
-		data        []*data.Set
+		name string
+		data []*data.Set
+		// id from URL, not part of body for updates
+		id          string
 		requestBody bytes.Buffer
 		wantCode    int
 		wantResp    bytes.Buffer
 		wantSet     *data.Set
 	}{
 		{
-			name: "Valid set created returns 200",
+			name: "Valid set updated returns 200",
+			data: []*data.Set{
+				{
+					ID:        1,
+					Movement:  "Barbell Curl",
+					Volume:    1,
+					Intensity: 100,
+				},
+			},
+			id: "1",
 			requestBody: *bytes.NewBufferString(` {
-					"movement": "Barbell Curl",
-					"volume": 1,
-					"intensity": 100
+					"movement": "Dumbbell Curl",
+					"volume": 5,
+					"intensity": 80
 			} `),
-			wantCode: 201,
+			wantCode: 200,
 			wantResp: *bytes.NewBufferString(` {
 					"id": 1,
-					"movement": "Barbell Curl",
-					"volume": 1,
-					"intensity": 100
+					"movement": "Dumbbell Curl",
+					"volume": 5,
+					"intensity": 80
 			} `),
 			wantSet: &data.Set{
 				ID:        1,
-				Movement:  "Barbell Curl",
-				Volume:    1,
-				Intensity: 100,
+				Movement:  "Dumbbell Curl",
+				Volume:    5,
+				Intensity: 80,
 			},
 		},
 		{
+			name: "Non-existent id returns 404",
+			data: []*data.Set{
+				{
+					ID:        1,
+					Movement:  "Barbell Curl",
+					Volume:    1,
+					Intensity: 100,
+				},
+			},
+			id: "2",
+			requestBody: *bytes.NewBufferString(` {
+					"movement": "Dumbbell Curl",
+					"volume": 5,
+					"intensity": 80
+			} `),
+			wantCode: 404,
+			wantResp: *bytes.NewBufferString(` {
+				"message": "set not found"
+			} `),
+		},
+		{
 			name: "Invalid volume returns 400",
+			id:   "1",
 			requestBody: *bytes.NewBufferString(` {
 					"movement": "Barbell Curl",
 					"volume": 0,
@@ -55,6 +88,7 @@ func TestCreateSet(t *testing.T) {
 		},
 		{
 			name: "0 intensity returns 400",
+			id:   "1",
 			requestBody: *bytes.NewBufferString(` {
 					"movement": "Barbell Curl",
 					"volume": 2,
@@ -67,6 +101,7 @@ func TestCreateSet(t *testing.T) {
 		},
 		{
 			name: "101 intensity returns 400",
+			id:   "1",
 			requestBody: *bytes.NewBufferString(` {
 					"movement": "Barbell Curl",
 					"volume": 2,
@@ -94,11 +129,16 @@ func TestCreateSet(t *testing.T) {
 
 		// set the body in the test context's Request
 		bodyReader := bytes.NewReader(v.requestBody.Bytes())
-		// method/uri parsing exceed the scope of this test
+
+		// add id to URL params
+		c.Params = append(c.Params, gin.Param{
+			Key:   "id",
+			Value: v.id,
+		})
 		c.Request, _ = http.NewRequest("", "", bodyReader)
 
-		// execute create with the test context
-		ts.Create(c)
+		// execute update with the test context
+		ts.Update(c)
 
 		// check response code
 		if v.wantCode != w.Code {
@@ -112,8 +152,8 @@ func TestCreateSet(t *testing.T) {
 
 		// check that set has been added if valid
 		if v.wantSet != nil {
-			if len(testData.Sets()) != initialSetSize+1 {
-				t.Fatalf("Set not added to the data set\nData: %v\n", testData.Sets())
+			if len(testData.Sets()) != initialSetSize {
+				t.Fatalf("Length of the data set has changed\nData: %v\n", testData.Sets())
 			}
 
 			// compare retrieved set with expected
