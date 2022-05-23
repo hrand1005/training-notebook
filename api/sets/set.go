@@ -15,6 +15,7 @@ import (
 func New(db data.SetDB) (*set, error) {
 	// register set validators
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		// TODO: remove this fancy business
 		v.RegisterValidation("movement", data.MovementValidator)
 		return &set{db: db}, nil
 	}
