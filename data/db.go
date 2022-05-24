@@ -3,6 +3,7 @@ package data
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"os"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -14,17 +15,19 @@ const (
 	CREATE TABLE IF NOT EXISTS sets (
 		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
 		"movement" TEXT,
-		"volume" TEXT,
-		"intensity" TEXT
+		"volume" FLOAT,
+		"intensity" FLOAT
 	)
 	`
-	insertSet = `INSERT OR IGNORE INTO sets(movement, volume, intensity) VALUES (?, ?, ?)`
+	insertSet     = `INSERT OR IGNORE INTO sets(movement, volume, intensity) VALUES (?, ?, ?)`
+	selectSetByID = `SELECT movement, volume, intensity FROM sets WHERE id=?`
+	selectAllSets = `SELECT * FROM sets`
 )
 
 // SetDB defines the interface for accessing/manipulating set data
 type SetDB interface {
 	AddSet(s *Set) error
-	Sets() []*Set
+	Sets() ([]*Set, error)
 	SetByID(id int) (*Set, error)
 	UpdateSet(id int, s *Set) error
 	DeleteSet(id int) error
@@ -70,17 +73,85 @@ func (sd *setDB) AddSet(s *Set) error {
 	if err != nil {
 		return fmt.Errorf("couldn't prepare SQL statement:\n%s\nerr: %v", insertSet, err)
 	}
-	statement.Exec(s.Movement, s.Volume, s.Intensity)
+	defer statement.Close()
+
+	if _, err = statement.Exec(s.Movement, s.Volume, s.Intensity); err != nil {
+		return fmt.Errorf("encountered error executing SQL statement: %v", err)
+	}
 
 	return nil
 }
 
-func (sd *setDB) Sets() []*Set {
-	return []*Set{}
+// Sets implements the SetDB interface method for retrieving all sets from the database.
+// An empty slice of sets is considered a valid result of the database query.
+func (sd *setDB) Sets() ([]*Set, error) {
+	statement, err := sd.handle.Prepare(selectAllSets)
+	if err != nil {
+		log.Printf("encountered error on line 86 in db.go: %v", err)
+		return nil, fmt.Errorf("couldn't prepare SQL statement:\n%s\nerr: %v", selectAllSets, err)
+	}
+	defer statement.Close()
+
+	rows, err := statement.Query()
+	if err != nil {
+		log.Printf("encountered error on line 91 in db.go: %v", err)
+		return nil, fmt.Errorf("error executing SQL query: %v", err)
+	}
+	defer rows.Close()
+
+	sets := make([]*Set, 0)
+	for rows.Next() {
+		var id int
+		var movement string
+		var volume float64
+		var intensity float64
+		if err := rows.Scan(&id, &movement, &volume, &intensity); err != nil {
+			log.Printf("encountered error on line 103 in db.go: %v", err)
+			return nil, fmt.Errorf("encountered error scanning row: %v", err)
+		}
+
+		sets = append(sets, &Set{
+			ID:        id,
+			Movement:  movement,
+			Volume:    volume,
+			Intensity: intensity,
+		})
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Printf("encountered error on line 116 in db.go: %v", err)
+		return nil, fmt.Errorf("encountered error after scanning rows: %v", err)
+	}
+
+	return sets, nil
 }
 
+// SetByID implements the SetDB interface method for finding a particular set in the database.
+// If no set with the given id is found, returns ErrNotFound.
 func (sd *setDB) SetByID(id int) (*Set, error) {
-	return nil, nil
+	statement, err := sd.handle.Prepare(selectSetByID)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't prepare SQL statement:\n%s\nerr: %v", selectSetByID, err)
+	}
+	defer statement.Close()
+
+	var movement string
+	var volume float64
+	var intensity float64
+	err = statement.QueryRow(id).Scan(&movement, &volume, &intensity)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("error executing SQL query: %v", err)
+	}
+
+	return &Set{
+		ID:        id,
+		Movement:  movement,
+		Volume:    volume,
+		Intensity: intensity,
+	}, nil
 }
 
 func (sd *setDB) UpdateSet(id int, s *Set) error {

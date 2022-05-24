@@ -112,8 +112,9 @@ func TestCreateSet(t *testing.T) {
 
 		// check that set has been added if valid
 		if v.wantSet != nil {
-			if len(testData.Sets()) != initialSetSize+1 {
-				t.Fatalf("Set not added to the data set\nData: %v\n", testData.Sets())
+			sets, _ := testData.Sets()
+			if len(sets) != initialSetSize+1 {
+				t.Fatalf("Set not added to the data set\nData: %v\n", sets)
 			}
 
 			// compare retrieved set with expected

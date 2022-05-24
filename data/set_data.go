@@ -27,8 +27,8 @@ func (sd *setData) AddSet(s *Set) error {
 	return nil
 }
 
-func (sd *setData) Sets() []*Set {
-	return sd.sets
+func (sd *setData) Sets() ([]*Set, error) {
+	return sd.sets, nil
 }
 
 func (sd *setData) SetByID(id int) (*Set, error) {

@@ -152,8 +152,9 @@ func TestUpdateSet(t *testing.T) {
 
 		// check that set has been added if valid
 		if v.wantSet != nil {
-			if len(testData.Sets()) != initialSetSize {
-				t.Fatalf("Length of the data set has changed\nData: %v\n", testData.Sets())
+			sets, _ := testData.Sets()
+			if len(sets) != initialSetSize {
+				t.Fatalf("Length of the data set has changed\nData: %v\n", sets)
 			}
 
 			// compare retrieved set with expected

@@ -80,8 +80,9 @@ func TestDeleteSet(t *testing.T) {
 		// DELETE success case should be StatusNoContent only
 		if w.Code == http.StatusNoContent {
 			// check that set has been added if valid
-			if len(testData.Sets()) != initialSetSize-1 {
-				t.Fatalf("Length of the data set did not decrease after deleting\nData: %v\n", testData.Sets())
+			sets, _ := testData.Sets()
+			if len(sets) != initialSetSize-1 {
+				t.Fatalf("Length of the data set did not decrease after deleting\nData: %v\n", sets)
 			}
 
 			if w.Body.String() != v.wantResp.String() {
@@ -89,7 +90,8 @@ func TestDeleteSet(t *testing.T) {
 			}
 		} else {
 			// no data changes should occur in the failure case
-			if len(testData.Sets()) != initialSetSize {
+			sets, _ := testData.Sets()
+			if len(sets) != initialSetSize {
 				t.Fatalf("Data changes should not occur when delete fails")
 			}
 			// check response body

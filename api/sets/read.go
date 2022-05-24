@@ -1,6 +1,7 @@
 package sets
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -16,13 +17,17 @@ import (
 // ReadAll is the handler for read requests on the set resource where no id is
 // specified.
 func (s *set) ReadAll(c *gin.Context) {
-	sets := s.db.Sets()
+	sets, err := s.db.Sets()
+	if err != nil {
+		msg := fmt.Sprintf("failed to fetch data: %v", err)
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": msg})
+	}
 	if len(sets) == 0 {
 		// if no sets are found, return an empty slice
 		c.IndentedJSON(http.StatusOK, []*data.Set{})
 		return
 	}
-	c.IndentedJSON(http.StatusOK, s.db.Sets())
+	c.IndentedJSON(http.StatusOK, sets)
 }
 
 // swagger:route GET /sets/{id} sets readSet
