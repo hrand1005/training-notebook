@@ -2,6 +2,7 @@ package sets
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -17,6 +18,7 @@ import (
 // ReadAll is the handler for read requests on the set resource where no id is
 // specified.
 func (s *set) ReadAll(c *gin.Context) {
+	log.Println("In ReadAll")
 	sets, err := s.db.Sets()
 	if err != nil {
 		msg := fmt.Sprintf("failed to fetch data: %v", err)
@@ -40,6 +42,7 @@ func (s *set) ReadAll(c *gin.Context) {
 // Read is the handler for read requests on the set resource where an id is
 // specified.
 func (s *set) Read(c *gin.Context) {
+	log.Println("In Read")
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "invalid request parameters"})

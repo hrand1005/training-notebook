@@ -13,15 +13,15 @@ const (
 	// TODO: improve typing, add CreatedOn and LastUpdatedOn datetimes
 	createSetTable = `
 	CREATE TABLE IF NOT EXISTS sets (
-		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-		"movement" TEXT,
-		"volume" FLOAT,
-		"intensity" FLOAT
-	)
+		id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+		movement TEXT,
+		volume FLOAT,
+		intensity FLOAT
+	);
 	`
-	insertSet     = `INSERT OR IGNORE INTO sets(movement, volume, intensity) VALUES (?, ?, ?)`
-	selectSetByID = `SELECT movement, volume, intensity FROM sets WHERE id=?`
-	selectAllSets = `SELECT * FROM sets`
+	insertSet     = `INSERT OR IGNORE INTO sets(movement, volume, intensity) VALUES (?, ?, ?);`
+	selectSetByID = `SELECT movement, volume, intensity FROM sets WHERE id=?;`
+	selectAllSets = `SELECT * FROM sets;`
 )
 
 // SetDB defines the interface for accessing/manipulating set data
@@ -69,6 +69,8 @@ func NewSetDB(filename string) (SetDB, error) {
 // AddSet implements the SetDB interface method for adding a set to the database.
 // Set ID is automatically assigned at the time that the set is inserted into the DB.
 func (sd *setDB) AddSet(s *Set) error {
+	log.Println("In AddSet")
+	log.Printf("Set: %+v\n", s)
 	statement, err := sd.handle.Prepare(insertSet)
 	if err != nil {
 		return fmt.Errorf("couldn't prepare SQL statement:\n%s\nerr: %v", insertSet, err)
@@ -85,6 +87,7 @@ func (sd *setDB) AddSet(s *Set) error {
 // Sets implements the SetDB interface method for retrieving all sets from the database.
 // An empty slice of sets is considered a valid result of the database query.
 func (sd *setDB) Sets() ([]*Set, error) {
+	log.Println("In Sets")
 	statement, err := sd.handle.Prepare(selectAllSets)
 	if err != nil {
 		log.Printf("encountered error on line 86 in db.go: %v", err)
@@ -123,12 +126,15 @@ func (sd *setDB) Sets() ([]*Set, error) {
 		return nil, fmt.Errorf("encountered error after scanning rows: %v", err)
 	}
 
+	log.Printf("All sets: %+v\n", sets)
+
 	return sets, nil
 }
 
 // SetByID implements the SetDB interface method for finding a particular set in the database.
 // If no set with the given id is found, returns ErrNotFound.
 func (sd *setDB) SetByID(id int) (*Set, error) {
+	log.Println("In SetByID")
 	statement, err := sd.handle.Prepare(selectSetByID)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't prepare SQL statement:\n%s\nerr: %v", selectSetByID, err)

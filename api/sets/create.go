@@ -1,6 +1,7 @@
 package sets
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -15,6 +16,7 @@ import (
 
 // Create is the handler for create requests on the set resource.
 func (s *set) Create(c *gin.Context) {
+	log.Println("In Create")
 	var newSet data.Set
 
 	if err := c.BindJSON(&newSet); err != nil {
@@ -24,5 +26,6 @@ func (s *set) Create(c *gin.Context) {
 
 	// assigns ID to newSet
 	s.db.AddSet(&newSet)
-	c.IndentedJSON(http.StatusCreated, newSet)
+	// TODO: return newly created set ID /object representation
+	c.IndentedJSON(http.StatusCreated, gin.H{"message": "set created!"})
 }
