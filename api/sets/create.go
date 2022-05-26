@@ -25,7 +25,13 @@ func (s *set) Create(c *gin.Context) {
 	}
 
 	// assigns ID to newSet
-	s.db.AddSet(&newSet)
-	// TODO: return newly created set ID /object representation
-	c.IndentedJSON(http.StatusCreated, gin.H{"message": "set created!"})
+	id, err := s.db.AddSet(&newSet)
+	if err != nil {
+		log.Printf("encountered error adding set: %v\n", err)
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
+	}
+
+	newSet.ID = id
+	c.IndentedJSON(http.StatusCreated, newSet)
 }

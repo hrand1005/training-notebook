@@ -22,11 +22,12 @@ const (
 	insertSet     = `INSERT OR IGNORE INTO sets(movement, volume, intensity) VALUES (?, ?, ?);`
 	selectSetByID = `SELECT movement, volume, intensity FROM sets WHERE id=?;`
 	selectAllSets = `SELECT * FROM sets;`
+	deleteSetByID = `DELETE FROM sets WHERE id=?;`
 )
 
 // SetDB defines the interface for accessing/manipulating set data
 type SetDB interface {
-	AddSet(s *Set) error
+	AddSet(s *Set) (int, error)
 	Sets() ([]*Set, error)
 	SetByID(id int) (*Set, error)
 	UpdateSet(id int, s *Set) error
@@ -68,36 +69,45 @@ func NewSetDB(filename string) (SetDB, error) {
 
 // AddSet implements the SetDB interface method for adding a set to the database.
 // Set ID is automatically assigned at the time that the set is inserted into the DB.
-func (sd *setDB) AddSet(s *Set) error {
-	log.Println("In AddSet")
-	log.Printf("Set: %+v\n", s)
+// Returns the assigned id upon successfully inserting the provided set, and nil error.
+// If an error occurs, returns -1 for the id and the error value.
+func (sd *setDB) AddSet(s *Set) (int, error) {
+	// log.Println("In AddSet")
+	// log.Printf("Set: %+v\n", s)
 	statement, err := sd.handle.Prepare(insertSet)
 	if err != nil {
-		return fmt.Errorf("couldn't prepare SQL statement:\n%s\nerr: %v", insertSet, err)
+		return -1, fmt.Errorf("couldn't prepare SQL statement:\n%s\nerr: %v", insertSet, err)
 	}
 	defer statement.Close()
 
-	if _, err = statement.Exec(s.Movement, s.Volume, s.Intensity); err != nil {
-		return fmt.Errorf("encountered error executing SQL statement: %v", err)
+	result, err := statement.Exec(s.Movement, s.Volume, s.Intensity)
+	if err != nil {
+		return -1, fmt.Errorf("encountered error executing SQL statement: %v", err)
 	}
 
-	return nil
+	setID, err := result.LastInsertId()
+	if err != nil {
+		return -1, fmt.Errorf("encountered error retrieving last inserted id: %v", err)
+	}
+	log.Printf("Newly assigned set assigned id: %v\n", setID)
+
+	return int(setID), nil
 }
 
 // Sets implements the SetDB interface method for retrieving all sets from the database.
 // An empty slice of sets is considered a valid result of the database query.
 func (sd *setDB) Sets() ([]*Set, error) {
-	log.Println("In Sets")
+	// log.Println("In Sets")
 	statement, err := sd.handle.Prepare(selectAllSets)
 	if err != nil {
-		log.Printf("encountered error on line 86 in db.go: %v", err)
+		// log.Printf("encountered error on line 86 in db.go: %v", err)
 		return nil, fmt.Errorf("couldn't prepare SQL statement:\n%s\nerr: %v", selectAllSets, err)
 	}
 	defer statement.Close()
 
 	rows, err := statement.Query()
 	if err != nil {
-		log.Printf("encountered error on line 91 in db.go: %v", err)
+		// log.Printf("encountered error on line 91 in db.go: %v", err)
 		return nil, fmt.Errorf("error executing SQL query: %v", err)
 	}
 	defer rows.Close()
@@ -109,7 +119,7 @@ func (sd *setDB) Sets() ([]*Set, error) {
 		var volume float64
 		var intensity float64
 		if err := rows.Scan(&id, &movement, &volume, &intensity); err != nil {
-			log.Printf("encountered error on line 103 in db.go: %v", err)
+			// log.Printf("encountered error on line 103 in db.go: %v", err)
 			return nil, fmt.Errorf("encountered error scanning row: %v", err)
 		}
 
@@ -122,11 +132,11 @@ func (sd *setDB) Sets() ([]*Set, error) {
 	}
 
 	if err = rows.Err(); err != nil {
-		log.Printf("encountered error on line 116 in db.go: %v", err)
+		// log.Printf("encountered error on line 116 in db.go: %v", err)
 		return nil, fmt.Errorf("encountered error after scanning rows: %v", err)
 	}
 
-	log.Printf("All sets: %+v\n", sets)
+	// log.Printf("All sets: %+v\n", sets)
 
 	return sets, nil
 }
@@ -134,7 +144,7 @@ func (sd *setDB) Sets() ([]*Set, error) {
 // SetByID implements the SetDB interface method for finding a particular set in the database.
 // If no set with the given id is found, returns ErrNotFound.
 func (sd *setDB) SetByID(id int) (*Set, error) {
-	log.Println("In SetByID")
+	// log.Println("In SetByID")
 	statement, err := sd.handle.Prepare(selectSetByID)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't prepare SQL statement:\n%s\nerr: %v", selectSetByID, err)
@@ -165,5 +175,27 @@ func (sd *setDB) UpdateSet(id int, s *Set) error {
 }
 
 func (sd *setDB) DeleteSet(id int) error {
+	statement, err := sd.handle.Prepare(deleteSetByID)
+	if err != nil {
+		return fmt.Errorf("couldn't prepare SQL statement:\n%s\nerr: %v", deleteSetByID, err)
+	}
+	defer statement.Close()
+
+	result, err := statement.Exec(id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return ErrNotFound
+		}
+		return fmt.Errorf("error executing SQL statement: %v", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("encountered error checking rows affected: %v", err)
+	}
+	if rowsAffected != 1 {
+		return fmt.Errorf("unexpected number of affected rows: %v", rowsAffected)
+	}
+
 	return nil
 }

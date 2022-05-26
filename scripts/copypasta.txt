@@ -1,4 +1,9 @@
+READALL
 curl http://localhost:8080/sets
 
+CREATE
 curl -d '{"movement": "Barbell Curl", "volume": 1, "intensity": 100}' -H 'Content-Type: application/json' http://localhost:8080/sets
+
+DELETE
+curl -X "DELETE" http://localhost:8080/sets
 

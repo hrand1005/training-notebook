@@ -14,17 +14,17 @@ type setData struct {
 }
 
 // Replace with DB logic
-func (sd *setData) AddSet(s *Set) error {
+func (sd *setData) AddSet(s *Set) (int, error) {
 	if len(sd.sets) == 0 {
 		s.ID = 1
 		sd.sets = append(sd.sets, s)
-		return nil
+		return 1, nil
 	}
 
 	maxID := sd.sets[len(sd.sets)-1].ID
 	s.ID = maxID + 1
 	sd.sets = append(sd.sets, s)
-	return nil
+	return s.ID, nil
 }
 
 func (sd *setData) Sets() ([]*Set, error) {
