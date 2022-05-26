@@ -72,15 +72,7 @@ func NewSetDB(filename string) (SetDB, error) {
 // Returns the assigned id upon successfully inserting the provided set, and nil error.
 // If an error occurs, returns -1 for the id and the error value.
 func (sd *setDB) AddSet(s *Set) (int, error) {
-	// log.Println("In AddSet")
-	// log.Printf("Set: %+v\n", s)
-	statement, err := sd.handle.Prepare(insertSet)
-	if err != nil {
-		return -1, fmt.Errorf("couldn't prepare SQL statement:\n%s\nerr: %v", insertSet, err)
-	}
-	defer statement.Close()
-
-	result, err := statement.Exec(s.Movement, s.Volume, s.Intensity)
+	result, err := sd.handle.Exec(insertSet, s.Movement, s.Volume, s.Intensity)
 	if err != nil {
 		return -1, fmt.Errorf("encountered error executing SQL statement: %v", err)
 	}
