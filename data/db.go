@@ -57,11 +57,10 @@ func NewSetDB(filename string) (SetDB, error) {
 		return nil, fmt.Errorf("failed to load %s: %v", filename, err)
 	}
 
-	statement, err := db.Prepare(createSetTable)
+	_, err = db.Exec(createSetTable)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't prepare SQL statement:\n%s\nerr: %v", createSetTable, err)
 	}
-	statement.Exec()
 
 	return &setDB{
 		handle: db,
@@ -145,17 +144,10 @@ func (sd *setDB) Sets() ([]*Set, error) {
 // SetByID implements the SetDB interface method for finding a particular set in the database.
 // If no set with the given id is found, returns ErrNotFound.
 func (sd *setDB) SetByID(id int) (*Set, error) {
-	// log.Println("In SetByID")
-	statement, err := sd.handle.Prepare(selectSetByID)
-	if err != nil {
-		return nil, fmt.Errorf("couldn't prepare SQL statement:\n%s\nerr: %v", selectSetByID, err)
-	}
-	defer statement.Close()
-
 	var movement string
 	var volume float64
 	var intensity float64
-	err = statement.QueryRow(id).Scan(&movement, &volume, &intensity)
+	err := sd.handle.QueryRow(selectSetByID, id).Scan(&movement, &volume, &intensity)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, ErrNotFound
@@ -172,13 +164,7 @@ func (sd *setDB) SetByID(id int) (*Set, error) {
 }
 
 func (sd *setDB) UpdateSet(id int, s *Set) error {
-	statement, err := sd.handle.Prepare(updateSetByID)
-	if err != nil {
-		return fmt.Errorf("couldn't prepare SQL statement:\n%s\nerr: %v", updateSetByID, err)
-	}
-	defer statement.Close()
-
-	result, err := statement.Exec(s.Movement, s.Volume, s.Intensity, id)
+	result, err := sd.handle.Exec(updateSetByID, s.Movement, s.Volume, s.Intensity, id)
 	if err != nil {
 		return fmt.Errorf("failed to update set: %v", err)
 	}
@@ -199,13 +185,7 @@ func (sd *setDB) UpdateSet(id int, s *Set) error {
 }
 
 func (sd *setDB) DeleteSet(id int) error {
-	statement, err := sd.handle.Prepare(deleteSetByID)
-	if err != nil {
-		return fmt.Errorf("couldn't prepare SQL statement:\n%s\nerr: %v", deleteSetByID, err)
-	}
-	defer statement.Close()
-
-	result, err := statement.Exec(id)
+	result, err := sd.handle.Exec(deleteSetByID, id)
 	if err != nil {
 		return fmt.Errorf("error executing SQL statement: %v", err)
 	}
