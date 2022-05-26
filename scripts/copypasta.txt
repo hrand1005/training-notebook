@@ -1,8 +1,11 @@
-READALL
+GET
 curl http://localhost:8080/sets
 
-CREATE
+POST
 curl -d '{"movement": "Barbell Curl", "volume": 1, "intensity": 100}' -H 'Content-Type: application/json' http://localhost:8080/sets
+
+PUT
+curl -X "PUT" -d '{"movement": "Deadlift", "volume": 69, "intensity": 69}' http://localhost:8080/sets/1
 
 DELETE
 curl -X "DELETE" http://localhost:8080/sets

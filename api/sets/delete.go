@@ -19,7 +19,7 @@ func (s *set) Delete(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
 
 	if err := s.db.DeleteSet(id); err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "set not found"})
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 		return
 	}
 

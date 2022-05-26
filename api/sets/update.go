@@ -27,11 +27,11 @@ func (s *set) Update(c *gin.Context) {
 
 	id, _ := strconv.Atoi(c.Param("id"))
 
-	// assigns newSet ID of id
 	if err := s.db.UpdateSet(id, &newSet); err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "set not found"})
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 		return
 	}
 
+	newSet.ID = id
 	c.IndentedJSON(http.StatusOK, newSet)
 }

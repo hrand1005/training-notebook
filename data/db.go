@@ -22,6 +22,7 @@ const (
 	insertSet     = `INSERT OR IGNORE INTO sets(movement, volume, intensity) VALUES (?, ?, ?);`
 	selectSetByID = `SELECT movement, volume, intensity FROM sets WHERE id=?;`
 	selectAllSets = `SELECT * FROM sets;`
+	updateSetByID = `UPDATE sets SET movement=?, volume=?, intensity=? WHERE id=?;`
 	deleteSetByID = `DELETE FROM sets WHERE id=?;`
 )
 
@@ -171,6 +172,29 @@ func (sd *setDB) SetByID(id int) (*Set, error) {
 }
 
 func (sd *setDB) UpdateSet(id int, s *Set) error {
+	statement, err := sd.handle.Prepare(updateSetByID)
+	if err != nil {
+		return fmt.Errorf("couldn't prepare SQL statement:\n%s\nerr: %v", updateSetByID, err)
+	}
+	defer statement.Close()
+
+	result, err := statement.Exec(s.Movement, s.Volume, s.Intensity, id)
+	if err != nil {
+		return fmt.Errorf("failed to update set: %v", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get RowsAffected by update: %v", err)
+	}
+
+	if rowsAffected != 1 {
+		if rowsAffected == 0 {
+			return ErrNotFound
+		}
+		return fmt.Errorf("unexpected number of affected rows: %v", rowsAffected)
+	}
+
 	return nil
 }
 
@@ -183,9 +207,6 @@ func (sd *setDB) DeleteSet(id int) error {
 
 	result, err := statement.Exec(id)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return ErrNotFound
-		}
 		return fmt.Errorf("error executing SQL statement: %v", err)
 	}
 
@@ -194,6 +215,9 @@ func (sd *setDB) DeleteSet(id int) error {
 		return fmt.Errorf("encountered error checking rows affected: %v", err)
 	}
 	if rowsAffected != 1 {
+		if rowsAffected == 0 {
+			return ErrNotFound
+		}
 		return fmt.Errorf("unexpected number of affected rows: %v", rowsAffected)
 	}
 
