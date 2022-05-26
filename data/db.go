@@ -89,15 +89,7 @@ func (sd *setDB) AddSet(s *Set) (int, error) {
 // Sets implements the SetDB interface method for retrieving all sets from the database.
 // An empty slice of sets is considered a valid result of the database query.
 func (sd *setDB) Sets() ([]*Set, error) {
-	// log.Println("In Sets")
-	statement, err := sd.handle.Prepare(selectAllSets)
-	if err != nil {
-		// log.Printf("encountered error on line 86 in db.go: %v", err)
-		return nil, fmt.Errorf("couldn't prepare SQL statement:\n%s\nerr: %v", selectAllSets, err)
-	}
-	defer statement.Close()
-
-	rows, err := statement.Query()
+	rows, err := sd.handle.Query(selectAllSets)
 	if err != nil {
 		// log.Printf("encountered error on line 91 in db.go: %v", err)
 		return nil, fmt.Errorf("error executing SQL query: %v", err)
@@ -127,8 +119,6 @@ func (sd *setDB) Sets() ([]*Set, error) {
 		// log.Printf("encountered error on line 116 in db.go: %v", err)
 		return nil, fmt.Errorf("encountered error after scanning rows: %v", err)
 	}
-
-	// log.Printf("All sets: %+v\n", sets)
 
 	return sets, nil
 }
