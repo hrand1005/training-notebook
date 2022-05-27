@@ -52,6 +52,99 @@ func TestAddSet(t *testing.T) {
 	}
 }
 
+// TestSetByID calls the SetByID method on a db, and checks that the expected
+// set is retrieved. A Set may be added to the db with AddSet, and is checked
+// to have been assigned a valid id (>0)
+func TestSetByID(t *testing.T) {
+	sd := setupTestSetDB()
+	defer teardownTestSetDB(sd)
+
+	wantSet := &Set{
+		Movement:  "Push ups",
+		Volume:    25,
+		Intensity: 45,
+	}
+	id, _ := sd.AddSet(wantSet)
+	if id <= 0 {
+		t.Fatalf("Invalid id assigned: %v", id)
+	}
+	// test nominal case
+	gotSet, gotErr := sd.SetByID(id)
+	if gotErr != nil {
+		t.Fatalf("Encountered unexpected error in SetByID using id %v\nErr: %v", id, gotErr)
+	}
+	if !setsEqual(gotSet, wantSet) {
+		t.Fatalf("Got Set: %+v\nWanted Set: %+v\n", gotSet, wantSet)
+	}
+
+	// test not found case
+	gotSet, gotErr = sd.SetByID(-1)
+	if gotErr != ErrNotFound {
+		t.Fatalf("Expected error not found by SetByID(-1)")
+	}
+	if gotSet != nil {
+		t.Fatalf("Expected nil set but got %+v", gotSet)
+	}
+}
+
+// TestUpdateSet calls setDB's UpdateSet method and checks that the expected
+// values are set in the DB, or that the expected error value is returned.
+func TestUpdateSet(t *testing.T) {
+	testCases := []struct {
+		name      string
+		setExists bool
+		updateSet *Set
+		wantErr   error
+	}{
+		{
+			name: "Nominal case updates existing set",
+			// it is assumed that a set with id=1 has been added to the database
+			setExists: true,
+			updateSet: &Set{
+				Movement:  "Hamstring Curl",
+				Volume:    20,
+				Intensity: 50,
+			},
+		},
+		{
+			name:      "Nonexistent ID returns ErrNotFound",
+			setExists: false,
+			updateSet: &Set{
+				Movement:  "Dummy value",
+				Volume:    10,
+				Intensity: 10,
+			},
+			wantErr: ErrNotFound,
+		},
+	}
+	for _, v := range testCases {
+		sd := setupTestSetDB()
+
+		// add an empty set to the db
+		id, _ := sd.AddSet(&Set{})
+
+		// set the id to invalid if we're testing the non-existent case
+		if !v.setExists {
+			id = -1
+		}
+		gotErr := sd.UpdateSet(id, v.updateSet)
+		if gotErr != v.wantErr {
+			t.Fatalf("Got error: %v\nWanted error: %v\n", gotErr, v.wantErr)
+		}
+
+		exists, _ := checkSetInDB(sd, id, v.updateSet)
+		if exists != v.setExists {
+			setMsg := fmt.Sprintf("Set ID: %v\nSet: %+v", id, v.updateSet)
+			t.Fatalf("Got that setExists is %v but wanted setExists to be %v\n%v", exists, v.setExists, setMsg)
+		}
+
+		teardownTestSetDB(sd)
+	}
+}
+
+// TestSets calls the Sets method on a db, and checks that the expected
+// sets have been retrieved. Sets are added to the db with AddSet, and are
+// checked to have been assigned valid ids (>0)
 func TestSets(t *testing.T) {
 	testCases := []struct {
 		name     string
@@ -174,10 +267,18 @@ func teardownTestSetDB(sd *setDB) {
 	os.Remove(testSetDB)
 }
 
+// setsEqual returns true if all non-id fields of the set are equal, and false otherwise.
+func setsEqual(set1, set2 *Set) bool {
+	if set1.Movement != set2.Movement || set1.Volume != set2.Volume || set1.Intensity != set2.Intensity {
+		return false
+	}
+	return true
+}
+
 // containsSet checks if the slice of sets contains the provided set.
 func containsSet(sets []*Set, s *Set) bool {
 	for _, v := range sets {
-		if s.Movement == v.Movement && s.Volume == v.Volume && s.Intensity == v.Intensity {
+		if setsEqual(s, v) {
 			return true
 		}
 	}
