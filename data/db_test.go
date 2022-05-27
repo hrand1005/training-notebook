@@ -91,30 +91,33 @@ func TestSetByID(t *testing.T) {
 // values are set in the DB, or that the expected error value is returned.
 func TestUpdateSet(t *testing.T) {
 	testCases := []struct {
-		name      string
-		setExists bool
-		updateSet *Set
-		wantErr   error
+		name string
+		// validID determines whether to call UpdateSet with a valid ID
+		validID       bool
+		updateSet     *Set
+		wantSetExists bool
+		wantErr       error
 	}{
 		{
-			name: "Nominal case updates existing set",
-			// it is assumed that a set with id=1 has been added to the database
-			setExists: true,
+			name:    "Nominal case updates existing set",
+			validID: true,
 			updateSet: &Set{
 				Movement:  "Hamstring Curl",
 				Volume:    20,
 				Intensity: 50,
 			},
+			wantSetExists: true,
 		},
 		{
-			name:      "Nonexistent ID returns ErrNotFound",
-			setExists: false,
+			name:    "Nonexistent ID returns ErrNotFound",
+			validID: false,
 			updateSet: &Set{
 				Movement:  "Dummy value",
 				Volume:    10,
 				Intensity: 10,
 			},
-			wantErr: ErrNotFound,
+			wantSetExists: false,
+			wantErr:       ErrNotFound,
 		},
 	}
 	for _, v := range testCases {
@@ -123,8 +126,8 @@ func TestUpdateSet(t *testing.T) {
 		// add an empty set to the db
 		id, _ := sd.AddSet(&Set{})
 
-		// set the id to invalid if we're testing the non-existent case
-		if !v.setExists {
+		// set the id to invalid if we're testing the error case
+		if !v.validID {
 			id = -1
 		}
 		gotErr := sd.UpdateSet(id, v.updateSet)
@@ -132,10 +135,11 @@ func TestUpdateSet(t *testing.T) {
 			t.Fatalf("Got error: %v\nWanted error: %v\n", gotErr, v.wantErr)
 		}
 
-		exists, _ := checkSetInDB(sd, id, v.updateSet)
-		if exists != v.setExists {
+		// check that the result of the update is equal to wantSetExists
+		setExists, _ := checkSetInDB(sd, id, v.updateSet)
+		if setExists != v.wantSetExists {
 			setMsg := fmt.Sprintf("Set ID: %v\nSet: %+v", id, v.updateSet)
-			t.Fatalf("Got that setExists is %v but wanted setExists to be %v\n%v", exists, v.setExists, setMsg)
+			t.Fatalf("Got that setExists is %v but wanted setExists to be %v\n%v", setExists, v.wantSetExists, setMsg)
 		}
 
 		teardownTestSetDB(sd)
@@ -248,6 +252,57 @@ func TestSets(t *testing.T) {
 		teardownTestSetDB(sd)
 	}
 
+}
+
+func TestDeleteSet(t *testing.T) {
+	testCases := []struct {
+		name    string
+		validID bool
+		// set to be deleted
+		deleteSet *Set
+		wantErr   error
+	}{
+		{
+			name:    "Nominal case removes set from db and returns nil error",
+			validID: true,
+			deleteSet: &Set{
+				Movement:  "Tricep pulldowns",
+				Volume:    12,
+				Intensity: 60,
+			},
+		},
+		{
+			name:    "Invalid ID case found case returns ErrNotFound",
+			validID: false,
+			deleteSet: &Set{
+				Movement:  "Tricep Pulldowns",
+				Volume:    12,
+				Intensity: 60,
+			},
+			wantErr: ErrNotFound,
+		},
+	}
+	for _, v := range testCases {
+		sd := setupTestSetDB()
+		id, _ := sd.AddSet(v.deleteSet)
+
+		if !v.validID {
+			// use an invalidID to test the error case
+			id = -1
+		}
+		gotErr := sd.DeleteSet(id)
+		if gotErr != v.wantErr {
+			t.Fatalf("Got error: %v\nWanted error: %v", gotErr, v.wantErr)
+		}
+
+		// check that the set is no longer in the database (same for error case)
+		setExists, _ := checkSetInDB(sd, id, v.deleteSet)
+		if setExists {
+			t.Fatalf("Found unexpected set:\nSetID: %v\nSet: %+v", id, v.deleteSet)
+		}
+
+		teardownTestSetDB(sd)
+	}
 }
 
 const testSetDB = "testSetDB.sqlite"
