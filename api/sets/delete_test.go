@@ -45,7 +45,7 @@ func TestDeleteSet(t *testing.T) {
 			id:       "2",
 			wantCode: 404,
 			wantResp: *bytes.NewBufferString(`{
-				"message": "set not found"
+				"message": "resource not found"
 			}`),
 		},
 	}

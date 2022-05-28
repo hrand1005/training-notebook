@@ -2,7 +2,6 @@ package sets
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,9 +15,13 @@ import (
 // Delete is the handler for delete requests on the set resource. An id must be
 // specified.
 func (s *set) Delete(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
+	setID, err := setIDFromParams(c)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": ErrInvalidSetID})
+		return
+	}
 
-	if err := s.db.DeleteSet(id); err != nil {
+	if err := s.db.DeleteSet(setID); err != nil {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 		return
 	}

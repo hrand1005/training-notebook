@@ -27,11 +27,11 @@ const (
 
 // SetDB defines the interface for accessing/manipulating set data
 type SetDB interface {
-	AddSet(s *Set) (int, error)
+	AddSet(s *Set) (SetID, error)
 	Sets() ([]*Set, error)
-	SetByID(id int) (*Set, error)
-	UpdateSet(id int, s *Set) error
-	DeleteSet(id int) error
+	SetByID(id SetID) (*Set, error)
+	UpdateSet(id SetID, s *Set) error
+	DeleteSet(id SetID) error
 }
 
 // setDB contains a handle to the underlying sql database, and implements SetDB
@@ -75,7 +75,7 @@ func newSetDB(filename string) (*setDB, error) {
 // Set ID is automatically assigned at the time that the set is inserted into the DB.
 // Returns the assigned id upon successfully inserting the provided set, and nil error.
 // If an error occurs, returns -1 for the id and the error value.
-func (sd *setDB) AddSet(s *Set) (int, error) {
+func (sd *setDB) AddSet(s *Set) (SetID, error) {
 	result, err := sd.handle.Exec(insertSet, s.Movement, s.Volume, s.Intensity)
 	if err != nil {
 		return -1, fmt.Errorf("encountered error executing SQL statement: %v", err)
@@ -86,7 +86,7 @@ func (sd *setDB) AddSet(s *Set) (int, error) {
 		return -1, fmt.Errorf("encountered error retrieving last inserted id: %v", err)
 	}
 
-	return int(setID), nil
+	return SetID(setID), nil
 }
 
 // Sets implements the SetDB interface method for retrieving all sets from the database.
@@ -100,7 +100,7 @@ func (sd *setDB) Sets() ([]*Set, error) {
 
 	sets := make([]*Set, 0)
 	for rows.Next() {
-		var id int
+		var id SetID
 		var movement string
 		var volume float64
 		var intensity float64
@@ -126,7 +126,7 @@ func (sd *setDB) Sets() ([]*Set, error) {
 // SetByID implements the SetDB interface method for finding a particular set in the database.
 // Returns a set matching the given ID in the database.
 // If no set with the given id is found, returns ErrNotFound.
-func (sd *setDB) SetByID(id int) (*Set, error) {
+func (sd *setDB) SetByID(id SetID) (*Set, error) {
 	var movement string
 	var volume float64
 	var intensity float64
@@ -149,7 +149,7 @@ func (sd *setDB) SetByID(id int) (*Set, error) {
 // UpdateSet implements the SetDB interface method for updating a particular set in the database.
 // Updates the columns of the set matching the given id with the fields of the given set.
 // If no set with the given id is found, returns ErrNotFound.
-func (sd *setDB) UpdateSet(id int, s *Set) error {
+func (sd *setDB) UpdateSet(id SetID, s *Set) error {
 	result, err := sd.handle.Exec(updateSetByID, s.Movement, s.Volume, s.Intensity, id)
 	if err != nil {
 		return fmt.Errorf("failed to update set: %v", err)
@@ -173,7 +173,7 @@ func (sd *setDB) UpdateSet(id int, s *Set) error {
 // DeleteSet implements the SetDB interface method for removing a particular set from the database.
 // Deletes the record of the set matching the given id.
 // If no set with the given id is found, returns ErrNotFound.
-func (sd *setDB) DeleteSet(id int) error {
+func (sd *setDB) DeleteSet(id SetID) error {
 	result, err := sd.handle.Exec(deleteSetByID, id)
 	if err != nil {
 		return fmt.Errorf("error executing SQL statement: %v", err)

@@ -10,6 +10,9 @@ import (
 // ErrNotFound should be returned when the resource does not exist.
 var ErrNotFound = errors.New("resource not found")
 
+// SetID is the unique int identifier assigned to sets when added to the SetDB
+type SetID int
+
 // Set defines the structure for an API set
 // swagger:model
 type Set struct {
@@ -17,7 +20,7 @@ type Set struct {
 	//
 	// required: true
 	// min: 1
-	ID            int     `json:"id"`
+	ID            SetID   `json:"id"`
 	Movement      string  `json:"movement" binding:"movement"`
 	Volume        float64 `json:"volume" binding:"gt=0"`
 	Intensity     float64 `json:"intensity" binding:"gt=0,lte=100"`

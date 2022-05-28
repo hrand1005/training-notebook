@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hrand1005/training-notebook/data"
@@ -42,16 +41,15 @@ func (s *set) ReadAll(c *gin.Context) {
 // Read is the handler for read requests on the set resource where an id is
 // specified.
 func (s *set) Read(c *gin.Context) {
-	log.Println("In Read")
-	id, err := strconv.Atoi(c.Param("id"))
+	setID, err := setIDFromParams(c)
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "invalid request parameters"})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": ErrInvalidSetID})
 		return
 	}
 
-	r, err := s.db.SetByID(id)
+	r, err := s.db.SetByID(setID)
 	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "set not found"})
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 		return
 	}
 

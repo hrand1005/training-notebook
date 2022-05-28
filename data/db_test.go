@@ -344,7 +344,7 @@ func containsSet(sets []*Set, s *Set) bool {
 // provided database. If an error occurs, or the set is not found to exist, returns false
 // and a description of the error. If a set is found and all checks pass, returns true and
 // an empty string.
-func checkSetInDB(sd *setDB, id int, s *Set) (bool, string) {
+func checkSetInDB(sd *setDB, id SetID, s *Set) (bool, string) {
 	var movement string
 	var volume float64
 	var intensity float64

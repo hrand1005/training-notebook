@@ -70,7 +70,7 @@ func TestUpdateSet(t *testing.T) {
 			} `),
 			wantCode: 404,
 			wantResp: *bytes.NewBufferString(` {
-				"message": "set not found"
+				"message": "resource not found"
 			} `),
 		},
 		{

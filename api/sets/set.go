@@ -2,12 +2,15 @@ package sets
 
 import (
 	"errors"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/hrand1005/training-notebook/data"
 )
+
+var ErrInvalidSetID = "Invalid set ID"
 
 // New registers custom validators with the validator engine and returns the
 // handler for the set resource.
@@ -30,4 +33,13 @@ func (s *set) RegisterHandlers(g *gin.RouterGroup) {
 	g.DELETE("/:id", s.Delete)
 	g.POST("/", s.Create)
 	g.PUT("/:id", s.Update)
+}
+
+func setIDFromParams(c *gin.Context) (data.SetID, error) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return -1, err
+	}
+
+	return data.SetID(id), nil
 }

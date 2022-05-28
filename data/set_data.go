@@ -14,7 +14,7 @@ type setData struct {
 }
 
 // Replace with DB logic
-func (sd *setData) AddSet(s *Set) (int, error) {
+func (sd *setData) AddSet(s *Set) (SetID, error) {
 	if len(sd.sets) == 0 {
 		s.ID = 1
 		sd.sets = append(sd.sets, s)
@@ -31,7 +31,7 @@ func (sd *setData) Sets() ([]*Set, error) {
 	return sd.sets, nil
 }
 
-func (sd *setData) SetByID(id int) (*Set, error) {
+func (sd *setData) SetByID(id SetID) (*Set, error) {
 	for _, s := range sd.sets {
 		if s.ID == id {
 			return s, nil
@@ -41,7 +41,7 @@ func (sd *setData) SetByID(id int) (*Set, error) {
 	return nil, ErrNotFound
 }
 
-func (sd *setData) UpdateSet(id int, s *Set) error {
+func (sd *setData) UpdateSet(id SetID, s *Set) error {
 	for i, v := range sd.sets {
 		if id == v.ID {
 			s.ID = id
@@ -53,7 +53,7 @@ func (sd *setData) UpdateSet(id int, s *Set) error {
 	return ErrNotFound
 }
 
-func (sd *setData) DeleteSet(id int) error {
+func (sd *setData) DeleteSet(id SetID) error {
 	for i, s := range sd.sets {
 		if s.ID == id {
 			sd.sets = append(sd.sets[:i], sd.sets[i+1:]...)

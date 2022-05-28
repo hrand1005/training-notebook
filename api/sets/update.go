@@ -2,7 +2,6 @@ package sets
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hrand1005/training-notebook/data"
@@ -25,13 +24,17 @@ func (s *set) Update(c *gin.Context) {
 		return
 	}
 
-	id, _ := strconv.Atoi(c.Param("id"))
+	setID, err := setIDFromParams(c)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": ErrInvalidSetID})
+		return
+	}
 
-	if err := s.db.UpdateSet(id, &newSet); err != nil {
+	if err := s.db.UpdateSet(setID, &newSet); err != nil {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 		return
 	}
 
-	newSet.ID = id
+	newSet.ID = setID
 	c.IndentedJSON(http.StatusOK, newSet)
 }

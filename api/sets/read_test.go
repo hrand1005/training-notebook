@@ -3,6 +3,7 @@ package sets
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http/httptest"
 	"reflect"
 	"testing"
@@ -53,7 +54,7 @@ func TestReadSingleSet(t *testing.T) {
 			},
 			wantCode: 404,
 			wantResp: *bytes.NewBufferString(`{
-				"message": "set not found"
+				"message": "resource not found"
 			}`),
 		},
 		{
@@ -68,9 +69,9 @@ func TestReadSingleSet(t *testing.T) {
 				},
 			},
 			wantCode: 400,
-			wantResp: *bytes.NewBufferString(`{
-				"message": "invalid request parameters"
-			}`),
+			wantResp: *bytes.NewBufferString(fmt.Sprintf(`{
+				"message": %q
+			}`, ErrInvalidSetID)),
 		},
 	}
 
