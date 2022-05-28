@@ -4,11 +4,13 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/hrand1005/training-notebook/api"
 	"github.com/hrand1005/training-notebook/api/sets"
 )
 
@@ -49,14 +51,20 @@ func (s *server) Start(ctx context.Context) {
 func buildServer(conf *Config) (Server, error) {
 	router := gin.New()
 
-	// create a group for the set resource
-	setGroup := router.Group("/sets")
+	// log traffic to our router to the logfile
+	err := registerLogger(conf.LogFile, router)
+	if err != nil {
+		log.Printf("Failed to register logger.\nLog File: %v", conf.LogFile)
+	}
 
 	// get DB from config
 	db, err := DBFromConfig(conf.Database)
 	if err != nil {
 		return nil, err
 	}
+
+	// create a group for the set resource
+	setGroup := router.Group("/sets")
 
 	// the set resource contains CRUD operations for sets
 	// configure with SetDB, an interface for CRUD operations on set data
@@ -105,4 +113,16 @@ func registerDocs(specPath string, g *gin.RouterGroup) {
 // registerFrontend should route our frontend builds
 func registerFrontend(r *gin.Engine) {
 	r.Use(static.Serve("/", static.LocalFile("./frontend/build", true)))
+}
+
+// registerLogger applies middleware to our router
+func registerLogger(logFile string, r *gin.Engine) error {
+	f, err := os.Create(logFile)
+	if err != nil {
+		return err
+	}
+
+	l := log.New(f, "", log.LstdFlags)
+	r.Use(api.LatencyLogger(l))
+	return nil
 }

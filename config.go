@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	Database    DBConfig     `yaml:"database"`
+	LogFile     string       `yaml:"log-file"`
 	Server      ServerConfig `yaml:"server-settings"`
 	SwaggerSpec string       `yaml:"swagger-spec"`
 	// TODO: change Prod field to deployment mode field

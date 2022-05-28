@@ -1,6 +1,7 @@
 database:
   is-test: false
   path: "./test-database.sqlite"
+log-file: "general.log"
 server-settings:
   port: ":8080"
   idle-timeout: 120s

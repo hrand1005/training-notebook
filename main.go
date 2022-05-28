@@ -6,9 +6,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"time"
-
-	"github.com/gin-gonic/gin"
 )
 
 var prodMode = flag.Bool("prod", false, "Run in production mode and serve static files")
@@ -41,26 +38,10 @@ func main() {
 	go func() {
 		sig := <-sigChan
 		log.Printf("Recieved kill signal: %+v\n", sig)
+
 		cancel()
 	}()
 
 	// start server with cancel context
 	server.Start(ctx)
-}
-
-func logger() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// before request
-		log.Printf("Processing %v request, URI: %v", c.Request.Method, c.Request.URL)
-		t := time.Now()
-
-		c.Next()
-
-		// after request
-		latency := time.Since(t)
-		log.Printf("Latency: %v\n", latency)
-
-		status := c.Writer.Status()
-		log.Printf("Response status: %v\n", status)
-	}
 }
