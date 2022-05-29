@@ -18,9 +18,8 @@ type server struct {
 	c []io.Closer
 }
 
-// Start boots the server with the provided context.
+// Start the server and await done signal for graceful shutdown
 func (s *server) Start(ctx context.Context) {
-	// start server
 	go func() {
 		if err := s.h.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("server encountered error while listening: %v\n", err)
