@@ -2,7 +2,6 @@ package sets
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -17,7 +16,6 @@ import (
 // ReadAll is the handler for read requests on the set resource where no id is
 // specified.
 func (s *set) ReadAll(c *gin.Context) {
-	log.Println("In ReadAll")
 	sets, err := s.db.Sets()
 	if err != nil {
 		msg := fmt.Sprintf("failed to fetch data: %v", err)

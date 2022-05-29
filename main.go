@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"os/signal"
+
+	"github.com/hrand1005/training-notebook/server"
 )
 
 var prodMode = flag.Bool("prod", false, "Run in production mode and serve static files")
@@ -21,7 +23,7 @@ func main() {
 	}
 
 	// build server with desired configuration
-	server, err := buildServer(srvConf)
+	server, err := ConstructHTTPServer(srvConf)
 	if err != nil {
 		log.Fatalf("failed to build server: %v", err)
 	}
@@ -44,4 +46,22 @@ func main() {
 
 	// start server with cancel context
 	server.Start(ctx)
+}
+
+// ConstructHTTPServer directs the construction of the server using a serverBuilder
+func ConstructHTTPServer(conf *Config) (server.Server, error) {
+	serverBuilder := server.NewBuilder()
+
+	serverBuilder.RegisterSwaggerDocs(conf.SwaggerSpec)
+	serverBuilder.RegisterFileLogger(conf.LogFile)
+	if conf.Prod {
+		serverBuilder.RegisterFrontend(conf.Frontend)
+	}
+	serverBuilder.SetDB(conf.Database.Path)
+	serverBuilder.SetServerAddr(conf.Server.Port)
+	serverBuilder.SetIdleTimeout(conf.Server.IdleTimeout)
+	serverBuilder.SetReadTimeout(conf.Server.ReadTimeout)
+	serverBuilder.SetWriteTimeout(conf.Server.WriteTimeout)
+
+	return serverBuilder.Construct()
 }

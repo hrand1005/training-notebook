@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	Database    DBConfig     `yaml:"database"`
+	Frontend    string       `yaml:"frontend"`
 	LogFile     string       `yaml:"log-file"`
 	Server      ServerConfig `yaml:"server-settings"`
 	SwaggerSpec string       `yaml:"swagger-spec"`
@@ -17,8 +18,7 @@ type Config struct {
 }
 
 type DBConfig struct {
-	Path   string `yaml:"path"`
-	IsTest bool   `yaml:"is-test"`
+	Path string `yaml:"path"`
 }
 
 type ServerConfig struct {

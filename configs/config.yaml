@@ -1,6 +1,6 @@
 database:
-  is-test: false
   path: "./test-database.sqlite"
+frontend: "./frontend/build"
 log-file: "general.log"
 server-settings:
   port: ":8080"
