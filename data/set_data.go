@@ -64,6 +64,12 @@ func (sd *setData) DeleteSet(id SetID) error {
 	return ErrNotFound
 }
 
+// Close cleans up any outstanding resources. In this case, returns nil
+func (sd *setData) Close() error {
+	// always returns nil
+	return nil
+}
+
 // Example data, to be replaced with db
 var TestSetData = &setData{
 	sets: []*Set{

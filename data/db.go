@@ -32,6 +32,7 @@ type SetDB interface {
 	SetByID(id SetID) (*Set, error)
 	UpdateSet(id SetID, s *Set) error
 	DeleteSet(id SetID) error
+	Close() error
 }
 
 // setDB contains a handle to the underlying sql database, and implements SetDB
@@ -191,4 +192,9 @@ func (sd *setDB) DeleteSet(id SetID) error {
 	}
 
 	return nil
+}
+
+// Close calls close on the underlying sql.DB
+func (sd *setDB) Close() error {
+	return sd.handle.Close()
 }

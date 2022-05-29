@@ -84,7 +84,7 @@ func (b *builder) Construct() (Server, error) {
 
 	// add outstanding resources to closers, and the server will call close
 	// on them before gracefully shutting down
-	closers := make([]io.Closer, 0, 5)
+	closers := []io.Closer{b.db}
 
 	// check if logger is set, if so use it with the router
 	if b.logFile != "" {
