@@ -2,12 +2,12 @@ package data
 
 // MockSetDB is my crack at manually implementing a Mock interface for testing
 type MockSetDB struct {
-	AddSetStub: func(s *Set) (SetID, error)
-	SetsStub: func() ([]*Set, error)
-	SetByIDStub: func(id SetID) (*Set, error)
-	UpdateSetStub: func(id SetID, s *Set) error
-	DeleteSetStub: func(id SetID) error
-	CloseStub: func() error
+	AddSetStub    func(s *Set) (SetID, error)
+	SetsStub      func() ([]*Set, error)
+	SetByIDStub   func(id SetID) (*Set, error)
+	UpdateSetStub func(id SetID, s *Set) error
+	DeleteSetStub func(id SetID) error
+	CloseStub     func() error
 }
 
 func (m *MockSetDB) AddSet(s *Set) (SetID, error) {

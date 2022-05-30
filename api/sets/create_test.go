@@ -134,25 +134,25 @@ func TestCreateSet(t *testing.T) {
 // DB unit tests exist. NOTE: the idea is to eventually replace the above test with proper
 // integration tests.
 func TestCreateSet_WithMock(t *testing.T) {
-	tests := []struct{
-		name string
+	tests := []struct {
+		name        string
 		requestBody bytes.Buffer
-		db data.MockSetDB
+		db          *data.MockSetDB
 		wantCode    int
 		wantResp    bytes.Buffer
 	}{
 		{
-			name: "Valid request and db call returns 200", 
+			name: "Valid request and db call returns 200",
 			requestBody: *bytes.NewBufferString(` {
 					"movement": "Barbell Curl",
 					"volume": 1,
 					"intensity": 100
 			} `),
 			db: &data.MockSetDB{
-				AddSetStub: func(s *Set) (SetID, error) {
+				AddSetStub: func(s *data.Set) (data.SetID, error) {
 					return 1, nil
-				}
-			}
+				},
+			},
 			wantCode: 201,
 			wantResp: *bytes.NewBufferString(` {
 					"id": 1,
@@ -160,12 +160,11 @@ func TestCreateSet_WithMock(t *testing.T) {
 					"volume": 1,
 					"intensity": 100
 			} `),
-		}
+		},
 	}
-	for _, v := range test {
+	for _, v := range tests {
 		// configure test case with data and test context
-		testData := data.NewSetData(v.db)
-		ts, err := New(testData)
+		ts, err := New(v.db)
 		if err != nil {
 			t.Fail()
 		}
