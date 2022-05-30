@@ -129,3 +129,67 @@ func TestCreateSet(t *testing.T) {
 		}
 	}
 }
+
+// TestCreateSet_WithMock allows us to test the API alone while mocking the DB, now that
+// DB unit tests exist. NOTE: the idea is to eventually replace the above test with proper
+// integration tests.
+func TestCreateSet_WithMock(t *testing.T) {
+	tests := []struct{
+		name string
+		requestBody bytes.Buffer
+		db data.MockSetDB
+		wantCode    int
+		wantResp    bytes.Buffer
+	}{
+		{
+			name: "Valid request and db call returns 200", 
+			requestBody: *bytes.NewBufferString(` {
+					"movement": "Barbell Curl",
+					"volume": 1,
+					"intensity": 100
+			} `),
+			db: &data.MockSetDB{
+				AddSetStub: func(s *Set) (SetID, error) {
+					return 1, nil
+				}
+			}
+			wantCode: 201,
+			wantResp: *bytes.NewBufferString(` {
+					"id": 1,
+					"movement": "Barbell Curl",
+					"volume": 1,
+					"intensity": 100
+			} `),
+		}
+	}
+	for _, v := range test {
+		// configure test case with data and test context
+		testData := data.NewSetData(v.db)
+		ts, err := New(testData)
+		if err != nil {
+			t.Fail()
+		}
+
+		gin.SetMode(gin.TestMode)
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+
+		// set the body in the test context's Request
+		bodyReader := bytes.NewReader(v.requestBody.Bytes())
+		// method/uri parsing exceed the scope of this test
+		c.Request, _ = http.NewRequest("", "", bodyReader)
+
+		// execute create with the test context
+		ts.Create(c)
+
+		// check response code
+		if v.wantCode != w.Code {
+			t.Fatalf("Wanted code: %v\nGot code: %v\n", v.wantCode, w.Code)
+		}
+
+		// check response body
+		if equal, _ := JSONBytesEqual(v.wantResp.Bytes(), w.Body.Bytes()); !equal {
+			t.Fatalf("Wanted body: %v\nGot body: %v\n", v.wantResp.String(), w.Body.String())
+		}
+	}
+}
