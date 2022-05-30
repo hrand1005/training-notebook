@@ -38,7 +38,7 @@ func (s *set) RegisterHandlers(g *gin.RouterGroup) {
 func setIDFromParams(c *gin.Context) (data.SetID, error) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return -1, err
+		return data.InvalidID, err
 	}
 
 	return data.SetID(id), nil

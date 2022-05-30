@@ -24,7 +24,7 @@ func TestAddSet(t *testing.T) {
 		{
 			name: "Invalid ID not used in add to db",
 			set: &Set{
-				ID:        -1,
+				ID:        InvalidID,
 				Movement:  "Press",
 				Volume:    6,
 				Intensity: 75,
@@ -78,9 +78,9 @@ func TestSetByID(t *testing.T) {
 	}
 
 	// test not found case
-	gotSet, gotErr = sd.SetByID(-1)
+	gotSet, gotErr = sd.SetByID(InvalidID)
 	if gotErr != ErrNotFound {
-		t.Fatalf("Expected error not found by SetByID(-1)")
+		t.Fatalf("Expected error not found by SetByID(InvalidID)")
 	}
 	if gotSet != nil {
 		t.Fatalf("Expected nil set but got %+v", gotSet)
@@ -128,7 +128,7 @@ func TestUpdateSet(t *testing.T) {
 
 		// set the id to invalid if we're testing the error case
 		if !v.validID {
-			id = -1
+			id = InvalidID
 		}
 		gotErr := sd.UpdateSet(id, v.updateSet)
 		if gotErr != v.wantErr {
@@ -162,7 +162,7 @@ func TestSets(t *testing.T) {
 			name: "ID value before insertion does not affect Sets result",
 			addSets: []*Set{
 				{
-					ID:        -1,
+					ID:        InvalidID,
 					Movement:  "High jump",
 					Volume:    1,
 					Intensity: 90,
@@ -180,19 +180,19 @@ func TestSets(t *testing.T) {
 			name: "Multiple added sets each appear in returned Sets",
 			addSets: []*Set{
 				{
-					ID:        -1,
+					ID:        InvalidID,
 					Movement:  "Yeet ball",
 					Volume:    10,
 					Intensity: 50,
 				},
 				{
-					ID:        -1,
+					ID:        InvalidID,
 					Movement:  "Farmer's carry",
 					Volume:    30,
 					Intensity: 20,
 				},
 				{
-					ID:        -1,
+					ID:        InvalidID,
 					Movement:  "Lateral raise",
 					Volume:    12,
 					Intensity: 60,
@@ -288,7 +288,7 @@ func TestDeleteSet(t *testing.T) {
 
 		if !v.validID {
 			// use an invalidID to test the error case
-			id = -1
+			id = InvalidID
 		}
 		gotErr := sd.DeleteSet(id)
 		if gotErr != v.wantErr {

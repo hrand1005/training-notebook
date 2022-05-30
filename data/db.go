@@ -9,6 +9,8 @@ import (
 )
 
 const (
+	// InvalidID represents the special int value returned as ID under error conditions
+	InvalidID SetID = -1
 	// TODO: improve typing, add CreatedOn and LastUpdatedOn datetimes
 	createSetTable = `
 	CREATE TABLE IF NOT EXISTS sets (
@@ -79,12 +81,12 @@ func newSetDB(filename string) (*setDB, error) {
 func (sd *setDB) AddSet(s *Set) (SetID, error) {
 	result, err := sd.handle.Exec(insertSet, s.Movement, s.Volume, s.Intensity)
 	if err != nil {
-		return -1, fmt.Errorf("encountered error executing SQL statement: %v", err)
+		return InvalidID, fmt.Errorf("encountered error executing SQL statement: %v", err)
 	}
 
 	setID, err := result.LastInsertId()
 	if err != nil {
-		return -1, fmt.Errorf("encountered error retrieving last inserted id: %v", err)
+		return InvalidID, fmt.Errorf("encountered error retrieving last inserted id: %v", err)
 	}
 
 	return SetID(setID), nil
