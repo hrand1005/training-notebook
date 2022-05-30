@@ -18,7 +18,8 @@ func (s *set) Create(c *gin.Context) {
 	var newSet data.Set
 
 	if err := c.BindJSON(&newSet); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		msg := data.BindingErrorToMessage(err)
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": msg})
 		return
 	}
 

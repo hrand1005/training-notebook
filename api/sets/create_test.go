@@ -11,9 +11,8 @@ import (
 	"github.com/hrand1005/training-notebook/data"
 )
 
-// TestCreateSet_WithMock allows us to test the API alone while mocking the DB, now that
-// DB unit tests exist. NOTE: the idea is to eventually replace the above test with proper
-// integration tests.
+// TestCreateSet tests the API layer's Create method for the Sets resource.
+// The test suite mocks the SetDB interface to test edge cases and error conditions.
 func TestCreateSet(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -67,7 +66,7 @@ func TestCreateSet(t *testing.T) {
 			}`),
 			wantCode: http.StatusBadRequest,
 			wantResp: *bytes.NewBufferString(` {
-				"message": "Key: 'Set.Movement' Error:Field validation for 'Movement' failed on the 'movement' tag"
+				"message": "'Movement' field must use unicode characters."
 			} `),
 		},
 		{
@@ -78,7 +77,7 @@ func TestCreateSet(t *testing.T) {
 			}`),
 			wantCode: http.StatusBadRequest,
 			wantResp: *bytes.NewBufferString(` {
-				"message": "Key: 'Set.Volume' Error:Field validation for 'Volume' failed on the 'gt' tag"
+				"message": "'Volume' field must be greater than 0."
 			} `),
 		},
 		{
@@ -90,7 +89,7 @@ func TestCreateSet(t *testing.T) {
 			}`),
 			wantCode: http.StatusBadRequest,
 			wantResp: *bytes.NewBufferString(` {
-				"message": "Key: 'Set.Volume' Error:Field validation for 'Volume' failed on the 'gt' tag"
+				"message": "'Volume' field must be greater than 0."
 			} `),
 		},
 		{
@@ -101,7 +100,7 @@ func TestCreateSet(t *testing.T) {
 			}`),
 			wantCode: http.StatusBadRequest,
 			wantResp: *bytes.NewBufferString(` {
-				"message": "Key: 'Set.Intensity' Error:Field validation for 'Intensity' failed on the 'gt' tag"
+				"message": "'Intensity' field must be greater than 0."
 			} `),
 		},
 		{
@@ -113,7 +112,7 @@ func TestCreateSet(t *testing.T) {
 			}`),
 			wantCode: http.StatusBadRequest,
 			wantResp: *bytes.NewBufferString(` {
-				"message": "Key: 'Set.Intensity' Error:Field validation for 'Intensity' failed on the 'gt' tag"
+				"message": "'Intensity' field must be greater than 0."
 			} `),
 		},
 		{
@@ -125,7 +124,7 @@ func TestCreateSet(t *testing.T) {
 			}`),
 			wantCode: http.StatusBadRequest,
 			wantResp: *bytes.NewBufferString(` {
-				"message": "Key: 'Set.Intensity' Error:Field validation for 'Intensity' failed on the 'lte' tag"
+				"message": "'Intensity' field must be no more than 100."
 			} `),
 		},
 	}

@@ -2,6 +2,7 @@ package data
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 
 	"github.com/go-playground/validator/v10"
@@ -29,11 +30,55 @@ type Set struct {
 }
 
 // MovementValidator validates the movement field in a Set.
+// Returns true if valid, else false.
 var MovementValidator validator.Func = func(fl validator.FieldLevel) bool {
 	// rule for movement string checks for unicode characters
 	rule := regexp.MustCompile(`^\w+(\s+\w+)*$`)
 	matches := rule.FindAllString(fl.Field().String(), -1)
 
-	// returns true if valid, else false
 	return len(matches) == 1
+}
+
+/*
+* The following code exists to translate binding errors into readable messages
+* for the API client. Use BindingErrorToMessage to produce readable messages
+* from errors binding json to Sets.
+* TODO: put this in util/ or pkg/ ?
+ */
+
+// BindingErrorToMessage turns a binding error from a set field into a
+// a readable message on the field's constraints.
+func BindingErrorToMessage(err error) string {
+	var msg string
+	var ve validator.ValidationErrors
+	if errors.As(err, &ve) {
+		for _, v := range ve {
+			msg += fmt.Sprintf("'%s' field %v.", v.Field(), fieldErrorToMessage(v))
+		}
+	}
+	return msg
+}
+
+// customTagToMessage gets condition for custom validators
+var customTagToMessage = map[string]string{
+	"movement": "must use unicode characters",
+}
+
+// standardTagToMessage gets conditions for standard validators
+var standardTagToMessage = map[string]string{
+	"gt":  "must be greater than",
+	"lte": "must be no more than",
+}
+
+// fieldErrorToMessage gets either standard or custom error messages
+func fieldErrorToMessage(fieldError validator.FieldError) string {
+	if msg, ok := standardTagToMessage[fieldError.Tag()]; ok {
+		return msg + " " + fieldError.Param()
+	}
+
+	if msg, ok := customTagToMessage[fieldError.Tag()]; ok {
+		return msg
+	}
+
+	return fieldError.Error()
 }
