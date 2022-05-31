@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
@@ -12,26 +14,30 @@ import (
 	"github.com/hrand1005/training-notebook/data"
 )
 
+// TestReadAllSets tests the API layer's Read method for the Sets resource.
+// The test suite mocks the SetDB interface to test edge cases and error conditions.
 func TestReadSingleSet(t *testing.T) {
-	testCases := []struct {
+	tests := []struct {
 		name     string
-		data     []*data.Set
+		db       *data.MockSetDB
 		params   gin.Params
 		wantCode int
 		wantResp bytes.Buffer
 	}{
 		{
-			name:   "Set found returns 200",
-			params: []gin.Param{{Key: "id", Value: "1"}},
-			data: []*data.Set{
-				{
-					ID:        1,
-					Movement:  "Squat",
-					Volume:    5,
-					Intensity: 80,
+			name: "Set found with valid db call returns StatusOK",
+			db: &data.MockSetDB{
+				SetByIDStub: func(s data.SetID) (*data.Set, error) {
+					return &data.Set{
+						ID:        1,
+						Movement:  "Squat",
+						Volume:    5,
+						Intensity: 80,
+					}, nil
 				},
 			},
-			wantCode: 200,
+			params:   []gin.Param{{Key: "id", Value: "1"}},
+			wantCode: http.StatusOK,
 			wantResp: *bytes.NewBufferString(`
 				{
 					"id": 1,
@@ -42,43 +48,44 @@ func TestReadSingleSet(t *testing.T) {
 			`),
 		},
 		{
-			name:   "Set not found returns 404",
-			params: []gin.Param{{Key: "id", Value: "4"}},
-			data: []*data.Set{
-				{
-					ID:        1,
-					Movement:  "Squat",
-					Volume:    5,
-					Intensity: 80,
+			name: "Set not found returns StatusNotFound",
+			db: &data.MockSetDB{
+				SetByIDStub: func(s data.SetID) (*data.Set, error) {
+					return nil, data.ErrNotFound
 				},
 			},
-			wantCode: 404,
+			params:   []gin.Param{{Key: "id", Value: "4"}},
+			wantCode: http.StatusNotFound,
 			wantResp: *bytes.NewBufferString(`{
-				"message": "resource not found"
+				"message": "no such set with id 4"
 			}`),
 		},
 		{
-			name:   "Invalid params returns 400",
-			params: []gin.Param{{Key: "bad", Value: "request"}},
-			data: []*data.Set{
-				{
-					ID:        1,
-					Movement:  "Squat",
-					Volume:    5,
-					Intensity: 80,
+			name: "Invalid db query returns InternalServerError",
+			db: &data.MockSetDB{
+				SetByIDStub: func(s data.SetID) (*data.Set, error) {
+					return nil, fmt.Errorf("Expected error")
 				},
 			},
-			wantCode: 400,
+			params:   []gin.Param{{Key: "id", Value: "4"}},
+			wantCode: http.StatusInternalServerError,
+			wantResp: *bytes.NewBufferString(`{
+				"message": "Expected error"
+			}`),
+		},
+		{
+			name:     "Invalid params returns StatusBadRequest",
+			params:   []gin.Param{{Key: "bad", Value: "request"}},
+			wantCode: http.StatusBadRequest,
 			wantResp: *bytes.NewBufferString(fmt.Sprintf(`{
 				"message": %q
 			}`, ErrInvalidSetID)),
 		},
 	}
 
-	for _, v := range testCases {
+	for _, v := range tests {
 		// configure test case with data and test context
-		testData := data.NewSetData(v.data)
-		ts, err := New(testData)
+		ts, err := New(v.db)
 		if err != nil {
 			t.Fail()
 		}
@@ -103,43 +110,77 @@ func TestReadSingleSet(t *testing.T) {
 	}
 }
 
+// TestReadAllSets tests the API layer's ReadAll method for the Sets resource.
+// The test suite mocks the SetDB interface to test edge cases and error conditions.
 func TestReadAllSets(t *testing.T) {
-	testCases := []struct {
+	tests := []struct {
 		name     string
-		data     []*data.Set
+		db       *data.MockSetDB
 		wantCode int
 		wantResp bytes.Buffer
 	}{
 		{
-			name: "1 set returns 200",
-			data: []*data.Set{
-				{
-					ID:        1,
-					Movement:  "Squat",
-					Volume:    5,
-					Intensity: 80,
+			name: "Valid db call with multiple sets returns StatusOK",
+			db: &data.MockSetDB{
+				SetsStub: func() ([]*data.Set, error) {
+					return []*data.Set{
+						{
+							ID:        1,
+							Movement:  "Squat",
+							Volume:    5,
+							Intensity: 80,
+						},
+						{
+							ID:        2,
+							Movement:  "Deadlift",
+							Volume:    4,
+							Intensity: 85,
+						},
+					}, nil
 				},
 			},
-			wantCode: 200,
+			wantCode: http.StatusOK,
 			wantResp: *bytes.NewBufferString(`[
 				{
 					"id": 1,
 					"movement": "Squat",
 					"volume": 5,
 					"intensity": 80
+				},
+				{
+					"id": 2,
+					"movement": "Deadlift",
+					"volume": 4,
+					"intensity": 85
 				}
 			]`),
 		},
 		{
-			name:     "No sets returns 200",
-			wantCode: 200,
+			name: "Valid db call with empty set returns StatusOK",
+			db: &data.MockSetDB{
+				SetsStub: func() ([]*data.Set, error) {
+					return nil, nil
+				},
+			},
+			wantCode: http.StatusOK,
 			wantResp: *bytes.NewBufferString(`[]`),
 		},
+		{
+			name: "Invalid db call returns InternalServerError",
+			db: &data.MockSetDB{
+				SetsStub: func() ([]*data.Set, error) {
+					return nil, fmt.Errorf("Expected Error")
+				},
+			},
+			wantCode: http.StatusInternalServerError,
+			wantResp: *bytes.NewBufferString(`{
+				"message": "failed to fetch data: Expected Error"
+			}`),
+		},
 	}
-	for _, v := range testCases {
+	for _, v := range tests {
 		// configure test case with data and test context
-		testData := data.NewSetData(v.data)
-		ts, err := New(testData)
+		ts, err := New(v.db)
 		if err != nil {
 			t.Fail()
 		}
@@ -161,16 +202,17 @@ func TestReadAllSets(t *testing.T) {
 			t.Fatalf("Wanted body: %v\nGot body: %v\n", v.wantResp.String(), w.Body.String())
 		}
 	}
-
 }
 
 // JSONBytesEqual compares the JSON in two byte slices.
 func JSONBytesEqual(a, b []byte) (bool, error) {
 	var j, j2 interface{}
 	if err := json.Unmarshal(a, &j); err != nil {
+		log.Printf("Problem unmarshalling json a: %v\nError: %v\n", a, err)
 		return false, err
 	}
 	if err := json.Unmarshal(b, &j2); err != nil {
+		log.Printf("Problem unmarshalling json b: %v\nError: %v\n", b, err)
 		return false, err
 	}
 	return reflect.DeepEqual(j2, j), nil

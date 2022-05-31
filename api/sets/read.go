@@ -18,8 +18,9 @@ import (
 func (s *set) ReadAll(c *gin.Context) {
 	sets, err := s.db.Sets()
 	if err != nil {
-		msg := fmt.Sprintf("failed to fetch data: %v", err)
+		msg := fmt.Sprintf("failed to fetch data: %s", err)
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": msg})
+		return
 	}
 	if len(sets) == 0 {
 		// if no sets are found, return an empty slice
@@ -47,7 +48,12 @@ func (s *set) Read(c *gin.Context) {
 
 	r, err := s.db.SetByID(setID)
 	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+		if err == data.ErrNotFound {
+			msg := fmt.Sprintf("no such set with id %v", setID)
+			c.IndentedJSON(http.StatusNotFound, gin.H{"message": msg})
+			return
+		}
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 

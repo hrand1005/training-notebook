@@ -22,7 +22,7 @@ func TestCreateSet(t *testing.T) {
 		wantResp    bytes.Buffer
 	}{
 		{
-			name: "Valid request and db call returns 200",
+			name: "Valid request and db call returns StatusCreated",
 			requestBody: *bytes.NewBufferString(` {
 					"movement": "Barbell Curl",
 					"volume": 1,
