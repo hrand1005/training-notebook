@@ -14,7 +14,7 @@ var ErrNotFound = errors.New("resource not found")
 // SetID is the unique int identifier assigned to sets when added to the SetDB
 type SetID int
 
-// Set defines the structure for an API set
+// Set is the model representation of a sets resource
 // swagger:model
 type Set struct {
 	// the id for this set
