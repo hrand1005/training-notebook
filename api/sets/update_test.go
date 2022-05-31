@@ -2,9 +2,9 @@ package sets
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -12,24 +12,20 @@ import (
 )
 
 func TestUpdateSet(t *testing.T) {
-	testCases := []struct {
+	tests := []struct {
 		name string
-		data []*data.Set
+		db   *data.MockSetDB
 		// id from URL, not part of body for updates
 		id          string
 		requestBody bytes.Buffer
 		wantCode    int
 		wantResp    bytes.Buffer
-		wantSet     *data.Set
 	}{
 		{
-			name: "Valid set updated returns 200",
-			data: []*data.Set{
-				{
-					ID:        1,
-					Movement:  "Barbell Curl",
-					Volume:    1,
-					Intensity: 100,
+			name: "Valid set updated returns StatusOK",
+			db: &data.MockSetDB{
+				UpdateSetStub: func(id data.SetID, s *data.Set) error {
+					return nil
 				},
 			},
 			id: "1",
@@ -38,28 +34,37 @@ func TestUpdateSet(t *testing.T) {
 					"volume": 5,
 					"intensity": 80
 			} `),
-			wantCode: 200,
+			wantCode: http.StatusOK,
 			wantResp: *bytes.NewBufferString(` {
 					"id": 1,
 					"movement": "Dumbbell Curl",
 					"volume": 5,
 					"intensity": 80
 			} `),
-			wantSet: &data.Set{
-				ID:        1,
-				Movement:  "Dumbbell Curl",
-				Volume:    5,
-				Intensity: 80,
-			},
 		},
 		{
-			name: "Non-existent id returns 404",
-			data: []*data.Set{
-				{
-					ID:        1,
-					Movement:  "Barbell Curl",
-					Volume:    1,
-					Intensity: 100,
+			name: "Invalid id param returns StatusBadRequest",
+			db: &data.MockSetDB{
+				UpdateSetStub: func(id data.SetID, s *data.Set) error {
+					return data.ErrNotFound
+				},
+			},
+			id: "-1",
+			requestBody: *bytes.NewBufferString(` {
+					"movement": "Dumbbell Curl",
+					"volume": 5,
+					"intensity": 80
+			} `),
+			wantCode: http.StatusBadRequest,
+			wantResp: *bytes.NewBufferString(` {
+				"message": "Invalid set ID"
+			} `),
+		},
+		{
+			name: "Set not found returns StatusNotFound",
+			db: &data.MockSetDB{
+				UpdateSetStub: func(id data.SetID, s *data.Set) error {
+					return data.ErrNotFound
 				},
 			},
 			id: "2",
@@ -68,57 +73,96 @@ func TestUpdateSet(t *testing.T) {
 					"volume": 5,
 					"intensity": 80
 			} `),
-			wantCode: 404,
+			wantCode: http.StatusNotFound,
 			wantResp: *bytes.NewBufferString(` {
-				"message": "resource not found"
+				"message": "no such set with id 2"
 			} `),
 		},
 		{
-			name: "Invalid volume returns 400",
+			name: "Invalid db call returns InternalServerError",
+			db: &data.MockSetDB{
+				UpdateSetStub: func(id data.SetID, s *data.Set) error {
+					return fmt.Errorf("Expected error")
+				},
+			},
+			id: "2",
+			requestBody: *bytes.NewBufferString(` {
+					"movement": "Dumbbell Curl",
+					"volume": 5,
+					"intensity": 80
+			} `),
+			wantCode: http.StatusInternalServerError,
+			wantResp: *bytes.NewBufferString(` {
+				"message": "Expected error"
+			} `),
+		},
+		{
+			name: "Missing volume returns StatusBadRequest",
+			id:   "1",
+			requestBody: *bytes.NewBufferString(` {
+					"movement": "Barbell Curl",
+					"intensity": 0.5
+			} `),
+			wantCode: http.StatusBadRequest,
+			wantResp: *bytes.NewBufferString(` {
+				"message": "'Volume' field must be greater than 0."
+			} `),
+		},
+		{
+			name: "Zero Volume returns StatusBadRequest",
 			id:   "1",
 			requestBody: *bytes.NewBufferString(` {
 					"movement": "Barbell Curl",
 					"volume": 0,
-					"intensity": 0.5
+					"intensity": 40
 			} `),
-			wantCode: 400,
+			wantCode: http.StatusBadRequest,
 			wantResp: *bytes.NewBufferString(` {
-				"message": "Key: 'Set.Volume' Error:Field validation for 'Volume' failed on the 'gt' tag"
+				"message": "'Volume' field must be greater than 0."
 			} `),
 		},
 		{
-			name: "0 intensity returns 400",
+			name: "Missing intensity returns StatusBadRequest",
 			id:   "1",
 			requestBody: *bytes.NewBufferString(` {
 					"movement": "Barbell Curl",
-					"volume": 2,
+					"volume": 2
+			} `),
+			wantCode: http.StatusBadRequest,
+			wantResp: *bytes.NewBufferString(` {
+				"message": "'Intensity' field must be greater than 0."
+			} `),
+		},
+		{
+			name: "Zero intensity returns StatusBadRequest",
+			id:   "1",
+			requestBody: *bytes.NewBufferString(`{
+				 	"movement": "Press",
+					"volume": 5,
 					"intensity": 0
-			} `),
-			wantCode: 400,
+			}`),
+			wantCode: http.StatusBadRequest,
 			wantResp: *bytes.NewBufferString(` {
-				"message": "Key: 'Set.Intensity' Error:Field validation for 'Intensity' failed on the 'gt' tag"
+				"message": "'Intensity' field must be greater than 0."
 			} `),
 		},
 		{
-			name: "101 intensity returns 400",
+			name: "101 intensity returns StatusBadRequest",
 			id:   "1",
-			requestBody: *bytes.NewBufferString(` {
-					"movement": "Barbell Curl",
-					"volume": 2,
+			requestBody: *bytes.NewBufferString(`{
+				 	"movement": "Press",
+					"volume": 5,
 					"intensity": 101
-			} `),
-			wantCode: 400,
+			}`),
+			wantCode: http.StatusBadRequest,
 			wantResp: *bytes.NewBufferString(` {
-				"message": "Key: 'Set.Intensity' Error:Field validation for 'Intensity' failed on the 'lte' tag"
+				"message": "'Intensity' field must be no more than 100."
 			} `),
 		},
 	}
 
-	for _, v := range testCases {
-		// configure test case with data and test context
-		initialSetSize := len(v.data)
-		testData := data.NewSetData(v.data)
-		ts, err := New(testData)
+	for _, v := range tests {
+		ts, err := New(v.db)
 		if err != nil {
 			t.Fail()
 		}
@@ -148,24 +192,6 @@ func TestUpdateSet(t *testing.T) {
 		// check response body
 		if equal, _ := JSONBytesEqual(v.wantResp.Bytes(), w.Body.Bytes()); !equal {
 			t.Fatalf("Wanted body: %v\nGot body: %v\n", v.wantResp.String(), w.Body.String())
-		}
-
-		// check that set has been added if valid
-		if v.wantSet != nil {
-			sets, _ := testData.Sets()
-			if len(sets) != initialSetSize {
-				t.Fatalf("Length of the data set has changed\nData: %v\n", sets)
-			}
-
-			// compare retrieved set with expected
-			gotSet, err := testData.SetByID(v.wantSet.ID)
-			if err != nil {
-				t.Fatalf("Set with wantSet.ID not found\nWanted set: %v", v.wantSet)
-			}
-
-			if !reflect.DeepEqual(v.wantSet, gotSet) {
-				t.Fatalf("Wanted set: %+v\nGot set: %+v\n", v.wantSet, gotSet)
-			}
 		}
 	}
 }

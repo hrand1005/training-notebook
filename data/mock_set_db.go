@@ -23,13 +23,13 @@ func (m *MockSetDB) SetByID(id SetID) (*Set, error) {
 }
 
 func (m *MockSetDB) UpdateSet(id SetID, s *Set) error {
-	return m.UpdateSet(id, s)
+	return m.UpdateSetStub(id, s)
 }
 
 func (m *MockSetDB) DeleteSet(id SetID) error {
-	return m.DeleteSet(id)
+	return m.DeleteSetStub(id)
 }
 
 func (m *MockSetDB) Close() error {
-	return m.Close()
+	return m.CloseStub()
 }
