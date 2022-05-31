@@ -1,6 +1,7 @@
 package sets
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -20,7 +21,8 @@ func (s *set) Update(c *gin.Context) {
 	var newSet data.Set
 
 	if err := c.BindJSON(&newSet); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		msg := data.BindingErrorToMessage(err)
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": msg})
 		return
 	}
 
@@ -31,7 +33,12 @@ func (s *set) Update(c *gin.Context) {
 	}
 
 	if err := s.db.UpdateSet(setID, &newSet); err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+		if err == data.ErrNotFound {
+			msg := fmt.Sprintf("no such set with id %v", setID)
+			c.IndentedJSON(http.StatusNotFound, gin.H{"message": msg})
+			return
+		}
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 

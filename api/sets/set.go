@@ -2,6 +2,7 @@ package sets
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -39,6 +40,9 @@ func setIDFromParams(c *gin.Context) (data.SetID, error) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return data.InvalidID, err
+	}
+	if id < 0 {
+		return data.InvalidID, fmt.Errorf("set id cannot be negative")
 	}
 
 	return data.SetID(id), nil
