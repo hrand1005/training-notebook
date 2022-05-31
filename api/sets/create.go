@@ -12,6 +12,7 @@ import (
 // responses:
 //  201: setResponse
 //  400: errorResponse
+//  500: errorResponse
 
 // Create is the handler for create requests on the set resource.
 func (s *set) Create(c *gin.Context) {

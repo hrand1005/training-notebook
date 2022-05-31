@@ -11,11 +11,9 @@ import (
 	"github.com/hrand1005/training-notebook/data"
 )
 
-<<<<<<< HEAD
+// TestUpdateSet tests the API layer's Update method for the Sets resource.
+// The test suite mocks the SetDB interface to test edge cases and error conditions.
 func TestUpdateSet(t *testing.T) {
-=======
-func TestUpdateSet_WithMocks(t *testing.T) {
->>>>>>> 7a9056ef925bc53cbddfedb0d73812fe17594771
 	tests := []struct {
 		name string
 		db   *data.MockSetDB

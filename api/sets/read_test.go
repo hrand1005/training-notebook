@@ -174,7 +174,7 @@ func TestReadAllSets(t *testing.T) {
 			},
 			wantCode: http.StatusInternalServerError,
 			wantResp: *bytes.NewBufferString(`{
-				"message": "failed to fetch data: Expected Error"
+				"message": "Expected Error"
 			}`),
 		},
 	}

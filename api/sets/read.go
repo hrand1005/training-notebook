@@ -12,14 +12,14 @@ import (
 // Read all sets.
 // responses:
 //  200: setsResponse
+//  500: errorResponse
 
 // ReadAll is the handler for read requests on the set resource where no id is
 // specified.
 func (s *set) ReadAll(c *gin.Context) {
 	sets, err := s.db.Sets()
 	if err != nil {
-		msg := fmt.Sprintf("failed to fetch data: %s", err)
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": msg})
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 	if len(sets) == 0 {
@@ -36,6 +36,7 @@ func (s *set) ReadAll(c *gin.Context) {
 //  200: setResponse
 //  400: errorResponse
 //  404: errorResponse
+//  500: errorResponse
 
 // Read is the handler for read requests on the set resource where an id is
 // specified.
