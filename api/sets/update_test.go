@@ -11,7 +11,11 @@ import (
 	"github.com/hrand1005/training-notebook/data"
 )
 
+<<<<<<< HEAD
 func TestUpdateSet(t *testing.T) {
+=======
+func TestUpdateSet_WithMocks(t *testing.T) {
+>>>>>>> 7a9056ef925bc53cbddfedb0d73812fe17594771
 	tests := []struct {
 		name string
 		db   *data.MockSetDB
