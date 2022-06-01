@@ -20,7 +20,7 @@ func TestReadSingleSet(t *testing.T) {
 	tests := []struct {
 		name     string
 		db       *data.MockSetDB
-		params   gin.Params
+		id       string
 		wantCode int
 		wantResp bytes.Buffer
 	}{
@@ -36,7 +36,7 @@ func TestReadSingleSet(t *testing.T) {
 					}, nil
 				},
 			},
-			params:   []gin.Param{{Key: "id", Value: "1"}},
+			id:       "1",
 			wantCode: http.StatusOK,
 			wantResp: *bytes.NewBufferString(`
 				{
@@ -54,7 +54,7 @@ func TestReadSingleSet(t *testing.T) {
 					return nil, data.ErrNotFound
 				},
 			},
-			params:   []gin.Param{{Key: "id", Value: "4"}},
+			id:       "4",
 			wantCode: http.StatusNotFound,
 			wantResp: *bytes.NewBufferString(`{
 				"message": "no such set with id 4"
@@ -67,7 +67,7 @@ func TestReadSingleSet(t *testing.T) {
 					return nil, fmt.Errorf("Expected error")
 				},
 			},
-			params:   []gin.Param{{Key: "id", Value: "4"}},
+			id:       "4",
 			wantCode: http.StatusInternalServerError,
 			wantResp: *bytes.NewBufferString(`{
 				"message": "Expected error"
@@ -75,7 +75,7 @@ func TestReadSingleSet(t *testing.T) {
 		},
 		{
 			name:     "Invalid params returns StatusBadRequest",
-			params:   []gin.Param{{Key: "bad", Value: "request"}},
+			id:       "-1",
 			wantCode: http.StatusBadRequest,
 			wantResp: *bytes.NewBufferString(fmt.Sprintf(`{
 				"message": %q
@@ -93,7 +93,7 @@ func TestReadSingleSet(t *testing.T) {
 		gin.SetMode(gin.TestMode)
 		w := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(w)
-		c.Params = v.params
+		c.AddParam("id", v.id)
 
 		// execute Read on test context
 		ts.Read(c)

@@ -17,7 +17,7 @@ func TestDeleteSet(t *testing.T) {
 	tests := []struct {
 		name     string
 		db       *data.MockSetDB
-		params   gin.Params
+		id       string
 		wantCode int
 		wantResp bytes.Buffer
 	}{
@@ -28,7 +28,7 @@ func TestDeleteSet(t *testing.T) {
 					return nil
 				},
 			},
-			params:   []gin.Param{{Key: "id", Value: "1"}},
+			id:       "1",
 			wantCode: http.StatusNoContent,
 		},
 		{
@@ -38,7 +38,7 @@ func TestDeleteSet(t *testing.T) {
 					return data.ErrNotFound
 				},
 			},
-			params:   []gin.Param{{Key: "id", Value: "4"}},
+			id:       "4",
 			wantCode: http.StatusNotFound,
 			wantResp: *bytes.NewBufferString(`{
 				"message": "no such set with id 4"
@@ -51,7 +51,7 @@ func TestDeleteSet(t *testing.T) {
 					return fmt.Errorf("Expected error")
 				},
 			},
-			params:   []gin.Param{{Key: "id", Value: "4"}},
+			id:       "4",
 			wantCode: http.StatusInternalServerError,
 			wantResp: *bytes.NewBufferString(`{
 				"message": "Expected error"
@@ -59,7 +59,7 @@ func TestDeleteSet(t *testing.T) {
 		},
 		{
 			name:     "Invalid params returns StatusBadRequest",
-			params:   []gin.Param{{Key: "bad", Value: "request"}},
+			id:       "-1",
 			wantCode: http.StatusBadRequest,
 			wantResp: *bytes.NewBufferString(fmt.Sprintf(`{
 				"message": %q
@@ -77,7 +77,7 @@ func TestDeleteSet(t *testing.T) {
 		gin.SetMode(gin.TestMode)
 		w := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(w)
-		c.Params = v.params
+		c.AddParam("id", v.id)
 
 		// execute Delete on test context
 		ts.Delete(c)

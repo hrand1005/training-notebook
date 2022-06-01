@@ -26,7 +26,7 @@ func RequireAuthorization(l AuthorizationLevel) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.Param("token")
 		if !authorized(token, l) {
-			c.IndentedJSON(http.StatusUnauthorized, gin.H{"message": "Insufficient permissions for that action."})
+			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 
