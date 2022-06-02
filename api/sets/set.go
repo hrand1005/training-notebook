@@ -29,7 +29,7 @@ func New(db data.SetDB) (*set, error) {
 
 func (s *set) RegisterHandlers(g *gin.RouterGroup) {
 	// Register GET and DELETE requests on routerGroup
-	g.GET("", s.ReadAll)
+	g.GET("/", s.ReadAll)
 	g.GET("/:id", s.Read)
 	g.DELETE("/:id", s.Delete)
 	g.POST("/", s.Create)

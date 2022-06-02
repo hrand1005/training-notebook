@@ -15,7 +15,7 @@ import (
 //  500: errorResponse
 
 // ReadAll is the handler for read requests on the set resource where no id is
-// specified.
+// specified. Returns all sets on this resource's data source.
 func (s *set) ReadAll(c *gin.Context) {
 	sets, err := s.db.Sets()
 	if err != nil {
