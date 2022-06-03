@@ -26,7 +26,7 @@ func TestAddSet(t *testing.T) {
 		{
 			name: "Invalid ID not used in add to db",
 			set: &models.Set{
-				ID:        InvalidID,
+				ID:        InvalidSetID,
 				Movement:  "Press",
 				Volume:    6,
 				Intensity: 75,
@@ -75,14 +75,14 @@ func TestSetByID(t *testing.T) {
 	if gotErr != nil {
 		t.Fatalf("Encountered unexpected error in SetByID using id %v\nErr: %v", id, gotErr)
 	}
-	if !setsEqual(gotSet, wantSet) {
+	if !models.SetsEqual(gotSet, wantSet) {
 		t.Fatalf("Got Set: %+v\nWanted Set: %+v\n", gotSet, wantSet)
 	}
 
 	// test not found case
-	gotSet, gotErr = sd.SetByID(InvalidID)
+	gotSet, gotErr = sd.SetByID(InvalidSetID)
 	if gotErr != ErrNotFound {
-		t.Fatalf("Expected error not found by SetByID(InvalidID)")
+		t.Fatalf("Expected error not found by SetByID(InvalidSetID)")
 	}
 	if gotSet != nil {
 		t.Fatalf("Expected nil set but got %+v", gotSet)
@@ -130,7 +130,7 @@ func TestUpdateSet(t *testing.T) {
 
 		// set the id to invalid if we're testing the error case
 		if !v.validID {
-			id = InvalidID
+			id = InvalidSetID
 		}
 		gotErr := sd.UpdateSet(id, v.updateSet)
 		if gotErr != v.wantErr {
@@ -164,7 +164,7 @@ func TestSets(t *testing.T) {
 			name: "ID value before insertion does not affect Sets result",
 			addSets: []*models.Set{
 				{
-					ID:        InvalidID,
+					ID:        InvalidSetID,
 					Movement:  "High jump",
 					Volume:    1,
 					Intensity: 90,
@@ -182,19 +182,19 @@ func TestSets(t *testing.T) {
 			name: "Multiple added sets each appear in returned Sets",
 			addSets: []*models.Set{
 				{
-					ID:        InvalidID,
+					ID:        InvalidSetID,
 					Movement:  "Yeet ball",
 					Volume:    10,
 					Intensity: 50,
 				},
 				{
-					ID:        InvalidID,
+					ID:        InvalidSetID,
 					Movement:  "Farmer's carry",
 					Volume:    30,
 					Intensity: 20,
 				},
 				{
-					ID:        InvalidID,
+					ID:        InvalidSetID,
 					Movement:  "Lateral raise",
 					Volume:    12,
 					Intensity: 60,
@@ -239,7 +239,7 @@ func TestSets(t *testing.T) {
 			t.Fatalf("Wanted length %v but got %v\nWant: %+v\nGot: %+v", len(v.wantSets), len(sets), v.wantSets, sets)
 		}
 		for _, wantSet := range v.wantSets {
-			if !containsSet(sets, wantSet) {
+			if !models.ContainsSet(sets, wantSet) {
 				t.Fatalf("Did not find expected set in sets response\nWanted: %+v\nFull Response: %+v", wantSet, sets)
 			}
 		}
@@ -289,8 +289,8 @@ func TestDeleteSet(t *testing.T) {
 		id, _ := sd.AddSet(v.deleteSet)
 
 		if !v.validID {
-			// use an invalidID to test the error case
-			id = InvalidID
+			// use an invalid id to test the error case
+			id = InvalidSetID
 		}
 		gotErr := sd.DeleteSet(id)
 		if gotErr != v.wantErr {
@@ -322,24 +322,6 @@ func setupTestSetDB() *setDB {
 func teardownTestSetDB(sd *setDB) {
 	sd.handle.Close()
 	os.Remove(testSetDB)
-}
-
-// setsEqual returns true if all non-id fields of the set are equal, and false otherwise.
-func setsEqual(set1, set2 *models.Set) bool {
-	if set1.Movement != set2.Movement || set1.Volume != set2.Volume || set1.Intensity != set2.Intensity {
-		return false
-	}
-	return true
-}
-
-// containsSet checks if the slice of sets contains the provided set.
-func containsSet(sets []*models.Set, s *models.Set) bool {
-	for _, v := range sets {
-		if setsEqual(s, v) {
-			return true
-		}
-	}
-	return false
 }
 
 // checkSetInDB is a testing utility that checks whehter the provided set exists in the

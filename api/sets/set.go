@@ -40,10 +40,10 @@ func (s *set) RegisterHandlers(g *gin.RouterGroup) {
 func setIDFromParams(c *gin.Context) (models.SetID, error) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return data.InvalidID, err
+		return data.InvalidSetID, err
 	}
 	if id < 0 {
-		return data.InvalidID, fmt.Errorf("set id cannot be negative")
+		return data.InvalidSetID, fmt.Errorf("set id cannot be negative")
 	}
 
 	return models.SetID(id), nil

@@ -24,10 +24,10 @@ const (
 type UserDB interface {
 	AddUser(*models.User) (models.UserID, error)
 	Users() ([]*models.User, error)
+	UserByID(id models.UserID) (*models.User, error)
 	/*
-		UserByID(id UserID) (*User, error)
-		UpdateUser(id UserID, u *User) error
-		DeleteUser(id UserID) error
+		UpdateUser(id models.UserID, u *models.User) error
+		DeleteUser(id models.UserID) error
 		Close() error
 	*/
 }
@@ -114,4 +114,23 @@ func (ud *userDB) Users() ([]*models.User, error) {
 	}
 
 	return users, nil
+}
+
+// UserByID implements the UserDB interface method for finding a particular user in the database.
+// Returns a user matching the given ID in the database.
+// If no user with the given id is found, returns ErrNotFound.
+func (ud *userDB) UserByID(id models.UserID) (*models.User, error) {
+	var name string
+	err := ud.handle.QueryRow(selectUserByID, id).Scan(&name)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("error executing SQL query: %v", err)
+	}
+
+	return &models.User{
+		ID:   id,
+		Name: name,
+	}, nil
 }

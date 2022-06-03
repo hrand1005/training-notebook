@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	// InvalidID represents the special int value returned as ID under error conditions
-	InvalidID models.SetID = -1
+	// InvalidSetID represents the special int value returned as ID under error conditions
+	InvalidSetID models.SetID = -1
 	// TODO: improve typing, add CreatedOn and LastUpdatedOn datetimes
 	createSetTable = `
 	CREATE TABLE IF NOT EXISTS sets (
@@ -82,12 +82,12 @@ func newSetDB(filename string) (*setDB, error) {
 func (sd *setDB) AddSet(s *models.Set) (models.SetID, error) {
 	result, err := sd.handle.Exec(insertSet, s.Movement, s.Volume, s.Intensity)
 	if err != nil {
-		return InvalidID, fmt.Errorf("encountered error executing SQL statement: %v", err)
+		return InvalidSetID, fmt.Errorf("encountered error executing SQL statement: %v", err)
 	}
 
 	setID, err := result.LastInsertId()
 	if err != nil {
-		return InvalidID, fmt.Errorf("encountered error retrieving last inserted id: %v", err)
+		return InvalidSetID, fmt.Errorf("encountered error retrieving last inserted id: %v", err)
 	}
 
 	return models.SetID(setID), nil

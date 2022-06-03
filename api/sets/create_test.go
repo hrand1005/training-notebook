@@ -51,7 +51,7 @@ func TestCreateSet(t *testing.T) {
 			} `),
 			db: &data.MockSetDB{
 				AddSetStub: func(s *models.Set) (models.SetID, error) {
-					return data.InvalidID, fmt.Errorf("Expected Error")
+					return data.InvalidSetID, fmt.Errorf("Expected Error")
 				},
 			},
 			wantCode: http.StatusInternalServerError,

@@ -50,6 +50,131 @@ func TestAddUser(t *testing.T) {
 	}
 }
 
+// TestUsers calls the Users method on a db, and checks that the expected
+// sets have been retrieved. Users are added to the db with AddUser, and are
+// checked to have been assigned valid ids (>0)
+func TestUsers(t *testing.T) {
+	testCases := []struct {
+		name      string
+		addUsers  []*models.User
+		wantUsers []*models.User
+	}{
+		{
+			name: "No added sets returns empty slice",
+		},
+		{
+			name: "ID value before insertion does not affect Users result",
+			addUsers: []*models.User{
+				{
+					ID:   InvalidUserID,
+					Name: "Bort",
+				},
+			},
+			wantUsers: []*models.User{
+				{
+					Name: "Bort",
+				},
+			},
+		},
+		{
+			name: "Multiple added sets each appear in returned Users",
+			addUsers: []*models.User{
+				{
+					ID:   InvalidUserID,
+					Name: "Paul",
+				},
+				{
+					ID:   InvalidUserID,
+					Name: "Liam",
+				},
+				{
+					ID:   InvalidUserID,
+					Name: "Herb",
+				},
+			},
+			wantUsers: []*models.User{
+				{
+					Name: "Paul",
+				},
+				{
+					Name: "Liam",
+				},
+				{
+					Name: "Herb",
+				},
+			},
+		},
+	}
+	for _, v := range testCases {
+		sd := setupTestUserDB()
+
+		// add 'addUsers' to the database
+		for _, s := range v.addUsers {
+			_, err := sd.AddUser(s)
+			if err != nil {
+				t.Fatalf("Encountered unexpected error: %v", err)
+			}
+		}
+
+		// check that each of 'wantUsers' is returned
+		users, err := sd.Users()
+		if err != nil {
+			t.Fatalf("Encountered unexpected error: %v", err)
+		}
+		if len(users) != len(v.wantUsers) {
+			t.Fatalf("Wanted length %v but got %v\nWant: %+v\nGot: %+v", len(v.wantUsers), len(users), v.wantUsers, users)
+		}
+		for _, wantUser := range v.wantUsers {
+			if !models.ContainsUser(users, wantUser) {
+				t.Fatalf("Did not find expected user in users response\nWanted: %+v\nFull Response: %+v", wantUser, users)
+			}
+		}
+
+		// check that ids were not assigned invalid values
+		for _, s := range users {
+			if s.ID <= 0 {
+				t.Fatalf("Invalid user id: %v", s.ID)
+			}
+		}
+
+		teardownTestUserDB(sd)
+	}
+
+}
+
+// TestUserByID calls the UserByID method on a db, and checks that the expected
+// user is retrieved. A User may be added to the db with AddUser, and is checked
+// to have been assigned a valid id (>0)
+func TestUserByID(t *testing.T) {
+	sd := setupTestUserDB()
+	defer teardownTestUserDB(sd)
+
+	wantUser := &models.User{
+		Name: "Hubie",
+	}
+	id, _ := sd.AddUser(wantUser)
+	if id <= 0 {
+		t.Fatalf("Invalid id assigned: %v", id)
+	}
+	// test nominal case
+	gotUser, gotErr := sd.UserByID(id)
+	if gotErr != nil {
+		t.Fatalf("Encountered unexpected error in UserByID using id %v\nErr: %v", id, gotErr)
+	}
+	if !models.UsersEqual(gotUser, wantUser) {
+		t.Fatalf("Got User: %+v\nWanted User: %+v\n", gotUser, wantUser)
+	}
+
+	// test not found case
+	gotUser, gotErr = sd.UserByID(InvalidUserID)
+	if gotErr != ErrNotFound {
+		t.Fatalf("Expected error not found by UserByID(InvalidUserID)")
+	}
+	if gotUser != nil {
+		t.Fatalf("Expected nil user but got %+v", gotUser)
+	}
+}
+
 func teardownTestUserDB(ud *userDB) {
 	ud.handle.Close()
 	os.Remove(testUserDB)
