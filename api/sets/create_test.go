@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hrand1005/training-notebook/data"
+	"github.com/hrand1005/training-notebook/models"
 )
 
 // TestCreateSet tests the API layer's Create method for the Sets resource.
@@ -29,7 +30,7 @@ func TestCreateSet(t *testing.T) {
 					"intensity": 100
 			} `),
 			db: &data.MockSetDB{
-				AddSetStub: func(s *data.Set) (data.SetID, error) {
+				AddSetStub: func(s *models.Set) (models.SetID, error) {
 					return 1, nil
 				},
 			},
@@ -49,7 +50,7 @@ func TestCreateSet(t *testing.T) {
 					"intensity": 100
 			} `),
 			db: &data.MockSetDB{
-				AddSetStub: func(s *data.Set) (data.SetID, error) {
+				AddSetStub: func(s *models.Set) (models.SetID, error) {
 					return data.InvalidID, fmt.Errorf("Expected Error")
 				},
 			},

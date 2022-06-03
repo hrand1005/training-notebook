@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hrand1005/training-notebook/data"
+	"github.com/hrand1005/training-notebook/models"
 )
 
 // TestReadAllUsers tests the API layer's Read method for the Users resource.
@@ -25,8 +26,8 @@ func TestReadAllUsers(t *testing.T) {
 		{
 			name: "Valid db call with multiple users returns StatusOK",
 			db: &data.MockUserDB{
-				UsersStub: func() ([]*data.User, error) {
-					return []*data.User{
+				UsersStub: func() ([]*models.User, error) {
+					return []*models.User{
 						{
 							ID:   1,
 							Name: "nendo",

@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hrand1005/training-notebook/data"
+	"github.com/hrand1005/training-notebook/models"
 )
 
 // swagger:route POST /sets sets createSet
@@ -16,10 +16,10 @@ import (
 
 // Create is the handler for create requests on the set resource.
 func (s *set) Create(c *gin.Context) {
-	var newSet data.Set
+	var newSet models.Set
 
 	if err := c.BindJSON(&newSet); err != nil {
-		msg := data.BindingErrorToMessage(err)
+		msg := models.BindingErrorToMessage(err)
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": msg})
 		return
 	}

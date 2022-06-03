@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"testing"
+
+	"github.com/hrand1005/training-notebook/models"
 )
 
 // TestAddUser calls the AddUser method on a db, and checks that the expected
@@ -11,17 +13,17 @@ import (
 func TestAddUser(t *testing.T) {
 	tests := []struct {
 		name string
-		user *User
+		user *models.User
 	}{
 		{
 			name: "Nominal case adds user to db",
-			user: &User{
+			user: &models.User{
 				Name: "Horbus",
 			},
 		},
 		{
 			name: "Invalid ID not used in add to db",
-			user: &User{
+			user: &models.User{
 				ID:   InvalidUserID,
 				Name: "Yorbus",
 			},
@@ -57,7 +59,7 @@ func teardownTestUserDB(ud *userDB) {
 // provided database. If an error occurs, or the user is not found to exist, returns false
 // and a description of the error. If a user is found and all checks pass, returns true and
 // an empty string.
-func checkUserInDB(ud *userDB, id UserID, u *User) (bool, string) {
+func checkUserInDB(ud *userDB, id models.UserID, u *models.User) (bool, string) {
 	var name string
 	err := ud.handle.QueryRow(selectUserByID, id).Scan(&name)
 	if err != nil {

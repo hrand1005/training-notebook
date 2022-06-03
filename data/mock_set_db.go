@@ -1,32 +1,34 @@
 package data
 
+import "github.com/hrand1005/training-notebook/models"
+
 // MockSetDB is my crack at manually implementing a Mock interface for testing
 type MockSetDB struct {
-	AddSetStub    func(s *Set) (SetID, error)
-	SetsStub      func() ([]*Set, error)
-	SetByIDStub   func(id SetID) (*Set, error)
-	UpdateSetStub func(id SetID, s *Set) error
-	DeleteSetStub func(id SetID) error
+	AddSetStub    func(s *models.Set) (models.SetID, error)
+	SetsStub      func() ([]*models.Set, error)
+	SetByIDStub   func(id models.SetID) (*models.Set, error)
+	UpdateSetStub func(id models.SetID, s *models.Set) error
+	DeleteSetStub func(id models.SetID) error
 	CloseStub     func() error
 }
 
-func (m *MockSetDB) AddSet(s *Set) (SetID, error) {
+func (m *MockSetDB) AddSet(s *models.Set) (models.SetID, error) {
 	return m.AddSetStub(s)
 }
 
-func (m *MockSetDB) Sets() ([]*Set, error) {
+func (m *MockSetDB) Sets() ([]*models.Set, error) {
 	return m.SetsStub()
 }
 
-func (m *MockSetDB) SetByID(id SetID) (*Set, error) {
+func (m *MockSetDB) SetByID(id models.SetID) (*models.Set, error) {
 	return m.SetByIDStub(id)
 }
 
-func (m *MockSetDB) UpdateSet(id SetID, s *Set) error {
+func (m *MockSetDB) UpdateSet(id models.SetID, s *models.Set) error {
 	return m.UpdateSetStub(id, s)
 }
 
-func (m *MockSetDB) DeleteSet(id SetID) error {
+func (m *MockSetDB) DeleteSet(id models.SetID) error {
 	return m.DeleteSetStub(id)
 }
 

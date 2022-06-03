@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hrand1005/training-notebook/data"
+	"github.com/hrand1005/training-notebook/models"
 )
 
 // TestCreateUser tests the API layer's Create method for the Users resource.
@@ -27,7 +28,7 @@ func TestCreateUser(t *testing.T) {
 				"name": "hildegard"
 			} `),
 			db: &data.MockUserDB{
-				AddUserStub: func(s *data.User) (data.UserID, error) {
+				AddUserStub: func(s *models.User) (models.UserID, error) {
 					return 1, nil
 				},
 			},
@@ -43,7 +44,7 @@ func TestCreateUser(t *testing.T) {
 				"name": "John"
 			} `),
 			db: &data.MockUserDB{
-				AddUserStub: func(s *data.User) (data.UserID, error) {
+				AddUserStub: func(s *models.User) (models.UserID, error) {
 					return data.InvalidUserID, fmt.Errorf("Expected Error")
 				},
 			},
@@ -58,7 +59,7 @@ func TestCreateUser(t *testing.T) {
 				name: "Empty name returns StatusBadRequest",
 				requestBody: *bytes.NewBufferString(` {} `),
 				db: &data.MockUserDB{
-					AddUserStub: func(s *data.User) (data.UserID, error) {
+					AddUserStub: func(s *models.User) (models.UserID, error) {
 						return data.InvalidUserID, fmt.Errorf("Expected Error")
 					},
 				},

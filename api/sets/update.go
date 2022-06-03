@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hrand1005/training-notebook/data"
+	"github.com/hrand1005/training-notebook/models"
 )
 
 // swagger:route PUT /sets/{id} sets updateSet
@@ -19,10 +20,10 @@ import (
 // Update is the handler for update requests on the set resource. An id must be
 // specified.
 func (s *set) Update(c *gin.Context) {
-	var newSet data.Set
+	var newSet models.Set
 
 	if err := c.BindJSON(&newSet); err != nil {
-		msg := data.BindingErrorToMessage(err)
+		msg := models.BindingErrorToMessage(err)
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": msg})
 		return
 	}

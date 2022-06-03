@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hrand1005/training-notebook/data"
+	"github.com/hrand1005/training-notebook/models"
 )
 
 // swagger:route POST /users users createUser
@@ -16,10 +16,10 @@ import (
 
 // Create is the handler for create requests on the users resource.
 func (u *user) Create(c *gin.Context) {
-	var newUser data.User
+	var newUser models.User
 
 	if err := c.BindJSON(&newUser); err != nil {
-		msg := data.BindingErrorToMessage(err)
+		msg := models.BindingErrorToMessage(err)
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": msg})
 		return
 	}

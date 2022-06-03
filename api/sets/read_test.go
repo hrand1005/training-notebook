@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hrand1005/training-notebook/data"
+	"github.com/hrand1005/training-notebook/models"
 )
 
 // TestReadAllSets tests the API layer's Read method for the Sets resource.
@@ -27,8 +28,8 @@ func TestReadSingleSet(t *testing.T) {
 		{
 			name: "Set found with valid db call returns StatusOK",
 			db: &data.MockSetDB{
-				SetByIDStub: func(s data.SetID) (*data.Set, error) {
-					return &data.Set{
+				SetByIDStub: func(s models.SetID) (*models.Set, error) {
+					return &models.Set{
 						ID:        1,
 						Movement:  "Squat",
 						Volume:    5,
@@ -50,7 +51,7 @@ func TestReadSingleSet(t *testing.T) {
 		{
 			name: "Set not found returns StatusNotFound",
 			db: &data.MockSetDB{
-				SetByIDStub: func(s data.SetID) (*data.Set, error) {
+				SetByIDStub: func(s models.SetID) (*models.Set, error) {
 					return nil, data.ErrNotFound
 				},
 			},
@@ -63,7 +64,7 @@ func TestReadSingleSet(t *testing.T) {
 		{
 			name: "Invalid db query returns InternalServerError",
 			db: &data.MockSetDB{
-				SetByIDStub: func(s data.SetID) (*data.Set, error) {
+				SetByIDStub: func(s models.SetID) (*models.Set, error) {
 					return nil, fmt.Errorf("Expected error")
 				},
 			},
@@ -122,8 +123,8 @@ func TestReadAllSets(t *testing.T) {
 		{
 			name: "Valid db call with multiple sets returns StatusOK",
 			db: &data.MockSetDB{
-				SetsStub: func() ([]*data.Set, error) {
-					return []*data.Set{
+				SetsStub: func() ([]*models.Set, error) {
+					return []*models.Set{
 						{
 							ID:        1,
 							Movement:  "Squat",
@@ -158,7 +159,7 @@ func TestReadAllSets(t *testing.T) {
 		{
 			name: "Valid db call with empty set returns StatusOK",
 			db: &data.MockSetDB{
-				SetsStub: func() ([]*data.Set, error) {
+				SetsStub: func() ([]*models.Set, error) {
 					return nil, nil
 				},
 			},
@@ -168,7 +169,7 @@ func TestReadAllSets(t *testing.T) {
 		{
 			name: "Invalid db call returns InternalServerError",
 			db: &data.MockSetDB{
-				SetsStub: func() ([]*data.Set, error) {
+				SetsStub: func() ([]*models.Set, error) {
 					return nil, fmt.Errorf("Expected Error")
 				},
 			},

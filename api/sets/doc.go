@@ -17,6 +17,7 @@ package sets
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/hrand1005/training-notebook/data"
+	"github.com/hrand1005/training-notebook/models"
 )
 
 type set struct {
@@ -28,7 +29,7 @@ type set struct {
 type setResponse struct {
 	// A single set
 	// in: body
-	Body data.Set
+	Body models.Set
 }
 
 // returns sets in the response
@@ -36,7 +37,7 @@ type setResponse struct {
 type setsResponse struct {
 	// A list of sets
 	// in: body
-	Body []data.Set
+	Body []models.Set
 }
 
 // returns generic error message as string

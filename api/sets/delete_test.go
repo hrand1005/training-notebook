@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hrand1005/training-notebook/data"
+	"github.com/hrand1005/training-notebook/models"
 )
 
 // TestDeleteSet tests the API layer's Delete method for the Sets resource.
@@ -24,7 +25,7 @@ func TestDeleteSet(t *testing.T) {
 		{
 			name: "Set found with valid db call returns StatusNoContent",
 			db: &data.MockSetDB{
-				DeleteSetStub: func(id data.SetID) error {
+				DeleteSetStub: func(id models.SetID) error {
 					return nil
 				},
 			},
@@ -34,7 +35,7 @@ func TestDeleteSet(t *testing.T) {
 		{
 			name: "Set not found returns StatusNotFound",
 			db: &data.MockSetDB{
-				DeleteSetStub: func(id data.SetID) error {
+				DeleteSetStub: func(id models.SetID) error {
 					return data.ErrNotFound
 				},
 			},
@@ -47,7 +48,7 @@ func TestDeleteSet(t *testing.T) {
 		{
 			name: "Invalid db query returns InternalServerError",
 			db: &data.MockSetDB{
-				DeleteSetStub: func(id data.SetID) error {
+				DeleteSetStub: func(id models.SetID) error {
 					return fmt.Errorf("Expected error")
 				},
 			},

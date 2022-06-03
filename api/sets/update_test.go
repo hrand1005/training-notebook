@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hrand1005/training-notebook/data"
+	"github.com/hrand1005/training-notebook/models"
 )
 
 // TestUpdateSet tests the API layer's Update method for the Sets resource.
@@ -26,7 +27,7 @@ func TestUpdateSet(t *testing.T) {
 		{
 			name: "Valid set updated returns StatusOK",
 			db: &data.MockSetDB{
-				UpdateSetStub: func(id data.SetID, s *data.Set) error {
+				UpdateSetStub: func(id models.SetID, s *models.Set) error {
 					return nil
 				},
 			},
@@ -47,7 +48,7 @@ func TestUpdateSet(t *testing.T) {
 		{
 			name: "Invalid id param returns StatusBadRequest",
 			db: &data.MockSetDB{
-				UpdateSetStub: func(id data.SetID, s *data.Set) error {
+				UpdateSetStub: func(id models.SetID, s *models.Set) error {
 					return data.ErrNotFound
 				},
 			},
@@ -65,7 +66,7 @@ func TestUpdateSet(t *testing.T) {
 		{
 			name: "Set not found returns StatusNotFound",
 			db: &data.MockSetDB{
-				UpdateSetStub: func(id data.SetID, s *data.Set) error {
+				UpdateSetStub: func(id models.SetID, s *models.Set) error {
 					return data.ErrNotFound
 				},
 			},
@@ -83,7 +84,7 @@ func TestUpdateSet(t *testing.T) {
 		{
 			name: "Invalid db call returns InternalServerError",
 			db: &data.MockSetDB{
-				UpdateSetStub: func(id data.SetID, s *data.Set) error {
+				UpdateSetStub: func(id models.SetID, s *models.Set) error {
 					return fmt.Errorf("Expected error")
 				},
 			},

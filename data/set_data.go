@@ -2,19 +2,21 @@
 // setData implements the SetDB interface.
 package data
 
+import "github.com/hrand1005/training-notebook/models"
+
 // NewSetData returns a new setData object initialized with the provided slice of
 // sets. To initialize an empty setData, provide nil.
-func NewSetData(sets []*Set) *setData {
+func NewSetData(sets []*models.Set) *setData {
 	return &setData{sets: sets}
 }
 
 // setData contains a slice of Sets and implements the SetData interface
 type setData struct {
-	sets []*Set
+	sets []*models.Set
 }
 
 // Replace with DB logic
-func (sd *setData) AddSet(s *Set) (SetID, error) {
+func (sd *setData) AddSet(s *models.Set) (models.SetID, error) {
 	if len(sd.sets) == 0 {
 		s.ID = 1
 		sd.sets = append(sd.sets, s)
@@ -27,11 +29,11 @@ func (sd *setData) AddSet(s *Set) (SetID, error) {
 	return s.ID, nil
 }
 
-func (sd *setData) Sets() ([]*Set, error) {
+func (sd *setData) Sets() ([]*models.Set, error) {
 	return sd.sets, nil
 }
 
-func (sd *setData) SetByID(id SetID) (*Set, error) {
+func (sd *setData) SetByID(id models.SetID) (*models.Set, error) {
 	for _, s := range sd.sets {
 		if s.ID == id {
 			return s, nil
@@ -41,7 +43,7 @@ func (sd *setData) SetByID(id SetID) (*Set, error) {
 	return nil, ErrNotFound
 }
 
-func (sd *setData) UpdateSet(id SetID, s *Set) error {
+func (sd *setData) UpdateSet(id models.SetID, s *models.Set) error {
 	for i, v := range sd.sets {
 		if id == v.ID {
 			s.ID = id
@@ -53,7 +55,7 @@ func (sd *setData) UpdateSet(id SetID, s *Set) error {
 	return ErrNotFound
 }
 
-func (sd *setData) DeleteSet(id SetID) error {
+func (sd *setData) DeleteSet(id models.SetID) error {
 	for i, s := range sd.sets {
 		if s.ID == id {
 			sd.sets = append(sd.sets[:i], sd.sets[i+1:]...)
@@ -72,7 +74,7 @@ func (sd *setData) Close() error {
 
 // Example data, to be replaced with db
 var TestSetData = &setData{
-	sets: []*Set{
+	sets: []*models.Set{
 		{
 			ID:        1,
 			Movement:  "Squat",

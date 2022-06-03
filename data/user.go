@@ -4,20 +4,13 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+
+	"github.com/hrand1005/training-notebook/models"
 )
 
-// UserID is the unique identifier for a user of the application
-type UserID int
-
-// User defines the model of the user resource
-type User struct {
-	ID   UserID `json:"id"`
-	Name string `json:"name"`
-}
-
 const (
-	InvalidUserID   UserID = -1
-	createUserTable        = `
+	InvalidUserID   models.UserID = -1
+	createUserTable               = `
 	CREATE TABLE IF NOT EXISTS users (
 		id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
 		name TEXT
@@ -29,8 +22,8 @@ const (
 )
 
 type UserDB interface {
-	AddUser(*User) (UserID, error)
-	Users() ([]*User, error)
+	AddUser(*models.User) (models.UserID, error)
+	Users() ([]*models.User, error)
 	/*
 		UserByID(id UserID) (*User, error)
 		UpdateUser(id UserID, u *User) error
@@ -79,7 +72,7 @@ func newUserDB(filename string) (*userDB, error) {
 // User ID is automatically assigned at the time that the user is inserted into the DB.
 // Returns the assigned id upon successfully inserting the provided user, and nil error.
 // If an error occurs, returns -1 for the id and the error value.
-func (ud *userDB) AddUser(u *User) (UserID, error) {
+func (ud *userDB) AddUser(u *models.User) (models.UserID, error) {
 	result, err := ud.handle.Exec(insertUser, u.Name)
 	if err != nil {
 		return InvalidUserID, fmt.Errorf("encountered error executing SQL statement: %v", err)
@@ -90,27 +83,27 @@ func (ud *userDB) AddUser(u *User) (UserID, error) {
 		return InvalidUserID, fmt.Errorf("encountered error retrieving last inserted id: %v", err)
 	}
 
-	return UserID(userID), nil
+	return models.UserID(userID), nil
 }
 
 // Users implements the UserDB interface method for retrieving all users from the database.
 // An empty slice of users is considered a valid result of the database query.
-func (ud *userDB) Users() ([]*User, error) {
+func (ud *userDB) Users() ([]*models.User, error) {
 	rows, err := ud.handle.Query(selectAllUsers)
 	if err != nil {
 		return nil, fmt.Errorf("error executing SQL query: %v", err)
 	}
 	defer rows.Close()
 
-	users := make([]*User, 0)
+	users := make([]*models.User, 0)
 	for rows.Next() {
-		var id UserID
+		var id models.UserID
 		var name string
 		if err := rows.Scan(&id, &name); err != nil {
 			return nil, fmt.Errorf("encountered error scanning row: %v", err)
 		}
 
-		users = append(users, &User{
+		users = append(users, &models.User{
 			ID:   id,
 			Name: name,
 		})

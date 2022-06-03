@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hrand1005/training-notebook/data"
+	"github.com/hrand1005/training-notebook/models"
 )
 
 // swagger:route GET /sets sets readAllSets
@@ -24,7 +25,7 @@ func (s *set) ReadAll(c *gin.Context) {
 	}
 	if len(sets) == 0 {
 		// if no sets are found, return an empty slice
-		c.IndentedJSON(http.StatusOK, []*data.Set{})
+		c.IndentedJSON(http.StatusOK, []*models.Set{})
 		return
 	}
 	c.IndentedJSON(http.StatusOK, sets)
