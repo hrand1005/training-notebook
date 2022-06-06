@@ -181,10 +181,10 @@ func TestUpdateUser(t *testing.T) {
 	testCases := []struct {
 		name string
 		// validID determines whether to call UpdateUser with a valid ID
-		validID       bool
+		validID        bool
 		updateUser     *models.User
 		wantUserExists bool
-		wantErr       error
+		wantErr        error
 	}{
 		{
 			name:    "Nominal case updates existing user",
@@ -201,7 +201,7 @@ func TestUpdateUser(t *testing.T) {
 				Name: "Yorb",
 			},
 			wantUserExists: false,
-			wantErr:       ErrNotFound,
+			wantErr:        ErrNotFound,
 		},
 	}
 	for _, v := range testCases {

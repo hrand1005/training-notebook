@@ -159,4 +159,3 @@ func (ud *userDB) UpdateUser(id models.UserID, u *models.User) error {
 
 	return nil
 }
-

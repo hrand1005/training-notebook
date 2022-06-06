@@ -16,7 +16,6 @@ var ErrInvalidSetID = "Invalid set ID"
 
 // New registers custom validators with the validator engine and returns the
 // handler for the set resource.
-// TODO: add DB interface param
 func New(db data.SetDB) (*set, error) {
 	// register set validators
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
