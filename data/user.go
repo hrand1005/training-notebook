@@ -19,14 +19,15 @@ const (
 	insertUser     = `INSERT OR IGNORE INTO users(name) VALUES (?);`
 	selectUserByID = `SELECT name FROM users WHERE id=?;`
 	selectAllUsers = `SELECT * FROM users;`
+	updateUserByID = `UPDATE users SET name=? WHERE id=?;`
 )
 
 type UserDB interface {
 	AddUser(*models.User) (models.UserID, error)
 	Users() ([]*models.User, error)
 	UserByID(id models.UserID) (*models.User, error)
+	UpdateUser(models.UserID, *models.User) error
 	/*
-		UpdateUser(id models.UserID, u *models.User) error
 		DeleteUser(id models.UserID) error
 		Close() error
 	*/
@@ -134,3 +135,28 @@ func (ud *userDB) UserByID(id models.UserID) (*models.User, error) {
 		Name: name,
 	}, nil
 }
+
+// UpdateUser implements the UserDB interface method for updating a particular user in the database.
+// Updates the columns of the user matching the given id with the fields of the given user.
+// If no user with the given id is found, returns ErrNotFound.
+func (ud *userDB) UpdateUser(id models.UserID, u *models.User) error {
+	result, err := ud.handle.Exec(updateUserByID, u.Name, id)
+	if err != nil {
+		return fmt.Errorf("failed to update user: %v", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get RowsAffected by update: %v", err)
+	}
+
+	if rowsAffected != 1 {
+		if rowsAffected == 0 {
+			return ErrNotFound
+		}
+		return fmt.Errorf("unexpected number of affected rows: %v", rowsAffected)
+	}
+
+	return nil
+}
+

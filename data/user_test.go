@@ -175,6 +175,61 @@ func TestUserByID(t *testing.T) {
 	}
 }
 
+// TestUpdateUser calls userDB's UpdateUser method and checks that the expected
+// values are user in the DB, or that the expected error value is returned.
+func TestUpdateUser(t *testing.T) {
+	testCases := []struct {
+		name string
+		// validID determines whether to call UpdateUser with a valid ID
+		validID       bool
+		updateUser     *models.User
+		wantUserExists bool
+		wantErr       error
+	}{
+		{
+			name:    "Nominal case updates existing user",
+			validID: true,
+			updateUser: &models.User{
+				Name: "Yert",
+			},
+			wantUserExists: true,
+		},
+		{
+			name:    "Nonexistent ID returns ErrNotFound",
+			validID: false,
+			updateUser: &models.User{
+				Name: "Yorb",
+			},
+			wantUserExists: false,
+			wantErr:       ErrNotFound,
+		},
+	}
+	for _, v := range testCases {
+		ud := setupTestUserDB()
+
+		// add an empty user to the db
+		id, _ := ud.AddUser(&models.User{})
+
+		// user the id to invalid if we're testing the error case
+		if !v.validID {
+			id = InvalidUserID
+		}
+		gotErr := ud.UpdateUser(id, v.updateUser)
+		if gotErr != v.wantErr {
+			t.Fatalf("Got error: %v\nWanted error: %v\n", gotErr, v.wantErr)
+		}
+
+		// check that the result of the update is equal to wantUserExists
+		userExists, _ := checkUserInDB(ud, id, v.updateUser)
+		if userExists != v.wantUserExists {
+			userMsg := fmt.Sprintf("User ID: %v\nUser: %+v", id, v.updateUser)
+			t.Fatalf("Got that userExists is %v but wanted userExists to be %v\n%v", userExists, v.wantUserExists, userMsg)
+		}
+
+		teardownTestUserDB(ud)
+	}
+}
+
 func teardownTestUserDB(ud *userDB) {
 	ud.handle.Close()
 	os.Remove(testUserDB)
