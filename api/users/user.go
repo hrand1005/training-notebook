@@ -21,6 +21,7 @@ func New(db data.UserDB) (*user, error) {
 
 func (u *user) RegisterHandlers(g *gin.RouterGroup) {
 	g.GET("/", u.ReadAll)
+	g.GET("/:id", u.Read)
 	g.POST("/", u.Create)
 	g.PUT("/:id", u.Update)
 }

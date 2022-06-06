@@ -1,9 +1,11 @@
 package users
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hrand1005/training-notebook/data"
 	"github.com/hrand1005/training-notebook/models"
 )
 
@@ -28,4 +30,35 @@ func (u *user) ReadAll(c *gin.Context) {
 	}
 	c.IndentedJSON(http.StatusOK, users)
 
+}
+
+// swagger:route GET /users/{id} users readUser
+// Read a user.
+// responses:
+//  200: userResponse
+//  400: errorResponse
+//  404: errorResponse
+//  500: errorResponse
+
+// Read is the handler for read requests on the user resource where an id is
+// specified.
+func (s *user) Read(c *gin.Context) {
+	userID, err := userIDFromParams(c)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": ErrInvalidUserID})
+		return
+	}
+
+	r, err := s.db.UserByID(userID)
+	if err != nil {
+		if err == data.ErrNotFound {
+			msg := fmt.Sprintf("no such user with id %v", userID)
+			c.IndentedJSON(http.StatusNotFound, gin.H{"message": msg})
+			return
+		}
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, r)
 }
