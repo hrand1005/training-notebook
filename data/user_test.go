@@ -230,6 +230,53 @@ func TestUpdateUser(t *testing.T) {
 	}
 }
 
+func TestDeleteUser(t *testing.T) {
+	testCases := []struct {
+		name    string
+		validID bool
+		// user to be deleted
+		deleteUser *models.User
+		wantErr    error
+	}{
+		{
+			name:    "Nominal case removes user from db and returns nil error",
+			validID: true,
+			deleteUser: &models.User{
+				Name: "hrand",
+			},
+		},
+		{
+			name:    "Invalid ID case found case returns ErrNotFound",
+			validID: false,
+			deleteUser: &models.User{
+				Name: "jarjar",
+			},
+			wantErr: ErrNotFound,
+		},
+	}
+	for _, v := range testCases {
+		ud := setupTestUserDB()
+		id, _ := ud.AddUser(v.deleteUser)
+
+		if !v.validID {
+			// use an invalid id to test the error case
+			id = InvalidUserID
+		}
+		gotErr := ud.DeleteUser(id)
+		if gotErr != v.wantErr {
+			t.Fatalf("Got error: %v\nWanted error: %v", gotErr, v.wantErr)
+		}
+
+		// check that the user is no longer in the database (same for error case)
+		userExists, _ := checkUserInDB(ud, id, v.deleteUser)
+		if userExists {
+			t.Fatalf("Found unexpected user:\nmodels.UserID: %v\nUser: %+v", id, v.deleteUser)
+		}
+
+		teardownTestUserDB(ud)
+	}
+}
+
 func teardownTestUserDB(ud *userDB) {
 	ud.handle.Close()
 	os.Remove(testUserDB)

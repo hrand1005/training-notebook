@@ -20,6 +20,7 @@ const (
 	selectUserByID = `SELECT name FROM users WHERE id=?;`
 	selectAllUsers = `SELECT * FROM users;`
 	updateUserByID = `UPDATE users SET name=? WHERE id=?;`
+	deleteUserByID = `DELETE FROM users WHERE id=?;`
 )
 
 type UserDB interface {
@@ -27,10 +28,8 @@ type UserDB interface {
 	Users() ([]*models.User, error)
 	UserByID(id models.UserID) (*models.User, error)
 	UpdateUser(models.UserID, *models.User) error
-	/*
-		DeleteUser(id models.UserID) error
-		Close() error
-	*/
+	DeleteUser(id models.UserID) error
+	Close() error
 }
 
 type userDB struct {
@@ -158,4 +157,32 @@ func (ud *userDB) UpdateUser(id models.UserID, u *models.User) error {
 	}
 
 	return nil
+}
+
+// DeleteUser implements the UserDB interface method for removing a particular user from the database.
+// Deletes the record of the user matching the given id.
+// If no user with the given id is found, returns ErrNotFound.
+func (sd *userDB) DeleteUser(id models.UserID) error {
+	result, err := sd.handle.Exec(deleteUserByID, id)
+	if err != nil {
+		return fmt.Errorf("error executing SQL statement: %v", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("encountered error checking rows affected: %v", err)
+	}
+	if rowsAffected != 1 {
+		if rowsAffected == 0 {
+			return ErrNotFound
+		}
+		return fmt.Errorf("unexpected number of affected rows: %v", rowsAffected)
+	}
+
+	return nil
+}
+
+// Close calls close on the underlying sql.DB
+func (ud *userDB) Close() error {
+	return ud.handle.Close()
 }
