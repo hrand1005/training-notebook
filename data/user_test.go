@@ -288,13 +288,18 @@ func teardownTestUserDB(ud *userDB) {
 // an empty string.
 func checkUserInDB(ud *userDB, id models.UserID, u *models.User) (bool, string) {
 	var name string
-	err := ud.handle.QueryRow(selectUserByID, id).Scan(&name)
+	var password string
+	err := ud.handle.QueryRow(selectUserByID, id).Scan(&name, &password)
 	if err != nil {
 		return false, fmt.Sprintf("error querying for user: %v", err)
 	}
 
 	if u.Name != name {
 		return false, fmt.Sprintf("expected name %q but got %q", u.Name, name)
+	}
+
+	if u.Password != password {
+		return false, fmt.Sprintf("expected password %q but got %q", u.Password, password)
 	}
 
 	return true, ""

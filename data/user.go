@@ -13,13 +13,14 @@ const (
 	createUserTable               = `
 	CREATE TABLE IF NOT EXISTS users (
 		id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-		name TEXT
+		name TEXT,
+		password TEXT
 	);
 	`
-	insertUser     = `INSERT OR IGNORE INTO users(name) VALUES (?);`
-	selectUserByID = `SELECT name FROM users WHERE id=?;`
+	insertUser     = `INSERT OR IGNORE INTO users(name, password) VALUES (?, ?);`
+	selectUserByID = `SELECT name, password FROM users WHERE id=?;`
 	selectAllUsers = `SELECT * FROM users;`
-	updateUserByID = `UPDATE users SET name=? WHERE id=?;`
+	updateUserByID = `UPDATE users SET name=?, password=? WHERE id=?;`
 	deleteUserByID = `DELETE FROM users WHERE id=?;`
 )
 
@@ -73,7 +74,7 @@ func newUserDB(filename string) (*userDB, error) {
 // Returns the assigned id upon successfully inserting the provided user, and nil error.
 // If an error occurs, returns -1 for the id and the error value.
 func (ud *userDB) AddUser(u *models.User) (models.UserID, error) {
-	result, err := ud.handle.Exec(insertUser, u.Name)
+	result, err := ud.handle.Exec(insertUser, u.Name, u.Password)
 	if err != nil {
 		return InvalidUserID, fmt.Errorf("encountered error executing SQL statement: %v", err)
 	}
@@ -99,13 +100,15 @@ func (ud *userDB) Users() ([]*models.User, error) {
 	for rows.Next() {
 		var id models.UserID
 		var name string
-		if err := rows.Scan(&id, &name); err != nil {
+		var password string
+		if err := rows.Scan(&id, &name, &password); err != nil {
 			return nil, fmt.Errorf("encountered error scanning row: %v", err)
 		}
 
 		users = append(users, &models.User{
 			ID:   id,
 			Name: name,
+			Password: password,
 		})
 	}
 
@@ -121,7 +124,8 @@ func (ud *userDB) Users() ([]*models.User, error) {
 // If no user with the given id is found, returns ErrNotFound.
 func (ud *userDB) UserByID(id models.UserID) (*models.User, error) {
 	var name string
-	err := ud.handle.QueryRow(selectUserByID, id).Scan(&name)
+	var password string
+	err := ud.handle.QueryRow(selectUserByID, id).Scan(&name, &password)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, ErrNotFound
@@ -132,6 +136,7 @@ func (ud *userDB) UserByID(id models.UserID) (*models.User, error) {
 	return &models.User{
 		ID:   id,
 		Name: name,
+		Password: password,
 	}, nil
 }
 
@@ -139,7 +144,7 @@ func (ud *userDB) UserByID(id models.UserID) (*models.User, error) {
 // Updates the columns of the user matching the given id with the fields of the given user.
 // If no user with the given id is found, returns ErrNotFound.
 func (ud *userDB) UpdateUser(id models.UserID, u *models.User) error {
-	result, err := ud.handle.Exec(updateUserByID, u.Name, id)
+	result, err := ud.handle.Exec(updateUserByID, u.Name, u.Password, id)
 	if err != nil {
 		return fmt.Errorf("failed to update user: %v", err)
 	}

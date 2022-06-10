@@ -7,6 +7,7 @@ type UserID int
 type User struct {
 	ID   UserID `json:"id"`
 	Name string `json:"name"`
+	Password string `json:"password,omitempty"`
 }
 
 // UsersEqual returns true if all non-id fields of the user are equal, and false otherwise.
