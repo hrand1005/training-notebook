@@ -106,8 +106,8 @@ func (ud *userDB) Users() ([]*models.User, error) {
 		}
 
 		users = append(users, &models.User{
-			ID:   id,
-			Name: name,
+			ID:       id,
+			Name:     name,
 			Password: password,
 		})
 	}
@@ -134,8 +134,8 @@ func (ud *userDB) UserByID(id models.UserID) (*models.User, error) {
 	}
 
 	return &models.User{
-		ID:   id,
-		Name: name,
+		ID:       id,
+		Name:     name,
 		Password: password,
 	}, nil
 }
