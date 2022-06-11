@@ -2,7 +2,6 @@ package users
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -13,13 +12,11 @@ func (u *user) Signup(c *gin.Context) {
 	var newUser models.User
 
 	if err := c.BindJSON(&newUser); err != nil {
-		log.Printf("debug: failed to bind in signup: %s", err.Error())
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 
 	if err := checkPasswordRequirements(newUser.Password); err != nil {
-		log.Printf("debug: password requirements failed in signup: %s", err.Error())
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}

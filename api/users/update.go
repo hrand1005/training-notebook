@@ -44,6 +44,7 @@ func (u *user) Update(c *gin.Context) {
 		return
 	}
 
+	// TODO: require authentication
 	newUser.ID = userID
 	c.IndentedJSON(http.StatusOK, newUser)
 }

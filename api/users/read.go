@@ -28,8 +28,9 @@ func (u *user) ReadAll(c *gin.Context) {
 		c.IndentedJSON(http.StatusOK, []*models.User{})
 		return
 	}
-	c.IndentedJSON(http.StatusOK, users)
 
+	// TODO: clean r of personal data if this is going to be a public api endpoint
+	c.IndentedJSON(http.StatusOK, users)
 }
 
 // swagger:route GET /users/{id} users readUser
@@ -60,5 +61,6 @@ func (s *user) Read(c *gin.Context) {
 		return
 	}
 
+	// TODO: clean r of personal data if this is going to be a public api endpoint
 	c.IndentedJSON(http.StatusOK, r)
 }
