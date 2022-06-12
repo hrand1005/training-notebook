@@ -16,7 +16,7 @@ func (u *user) Login(c *gin.Context) {
 		return
 	}
 
-	user, err := u.db.UserByID(credentials.UserID)
+	user, err := u.db.UserByID(credentials.UID)
 	if err != nil {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 		return
