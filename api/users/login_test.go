@@ -13,34 +13,40 @@ import (
 )
 
 func TestLogin(t *testing.T) {
-  testUser := &models.User{
-    ID: 2,
-    Name: "TestUser",
-    Password: hashPassword("12345"),
-  }
-  tests := []struct{
-    name string
+	// define existing user to use in login test cases
+	testUserID := models.UserID(2)
+	testUserName := "TestUser"
+	testUserPassword := "12345"
+	hashedPassword, _ := hashPassword("12345")
+	testUser := &models.User{
+		ID:       testUserID,
+		Name:     testUserName,
+		Password: hashedPassword,
+	}
+
+	tests := []struct {
+		name        string
 		requestBody bytes.Buffer
 		db          *data.MockUserDB
 		wantCode    int
-		wantToken string
-  }{
-    {
-      name: "Valid request and DB call returns StatusOK",
-			requestBody: *bytes.NewBufferString(` {
-				"user-id": 2,
-				"password": "12345"
-			} `),
+		wantToken   string
+	}{
+		{
+			name: "Valid request and DB call returns StatusOK",
+			requestBody: *bytes.NewBufferString(fmt.Sprintf(` {
+				"user-id": %v,
+				"password": "%s"
+			} `, testUserID, testUserPassword)),
 			db: &data.MockUserDB{
-        UserByIDStub: func(id models.UserID) (*models.User, error) {
-          return testUser, nil
-        },
+				UserByIDStub: func(id models.UserID) (*models.User, error) {
+					return testUser, nil
+				},
 			},
-			wantCode: http.StatusOK,
+			wantCode:  http.StatusOK,
 			wantToken: buildToken(testUser),
-    },
-  }
-  for _, v := range tests {
+		},
+	}
+	for _, v := range tests {
 		// configure test case with data and test context
 		u, err := New(v.db)
 		if err != nil {
@@ -59,12 +65,12 @@ func TestLogin(t *testing.T) {
 		// execute create with the test context
 		u.Login(c)
 
-    fmt.Printf("Wanted token: %s\nGot response: %v", v.wantToken, w.Body)
+		fmt.Printf("Wanted token: %s\nGot response: %v", v.wantToken, w.Body)
 		// check response code
 		if v.wantCode != w.Code {
 			t.Fatalf("Wanted code: %v\nGot code: %v\n", v.wantCode, w.Code)
 		}
 
-    fmt.Printf("Wanted token: %s\nGot response: %v", v.wantToken, w.Body)
-  }
+		fmt.Printf("Wanted token: %s\nGot response: %v", v.wantToken, w.Body)
+	}
 }

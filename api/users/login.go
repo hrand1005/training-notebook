@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hrand1005/training-notebook/models"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (u *user) Login(c *gin.Context) {
@@ -32,11 +33,18 @@ func (u *user) Login(c *gin.Context) {
 }
 
 func AuthenticateUser(user *models.User, credentials models.Credentails) (string, error) {
-	if hashPassword(credentials.Password) == user.Password {
+	if checkPasswordHash(user.Password, credentials.Password) {
 		return buildToken(user), nil
 	}
 
 	return "", fmt.Errorf("incorrect password")
+}
+
+func checkPasswordHash(hash, password string) bool {
+	if err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)); err != nil {
+		return false
+	}
+	return true
 }
 
 func buildToken(user *models.User) string {

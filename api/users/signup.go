@@ -2,10 +2,12 @@ package users
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hrand1005/training-notebook/models"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (u *user) Signup(c *gin.Context) {
@@ -22,7 +24,12 @@ func (u *user) Signup(c *gin.Context) {
 	}
 
 	// hash the password so that user information is protected
-	hashedPassword := hashPassword(newUser.Password)
+	hashedPassword, err := hashPassword(newUser.Password)
+	if err != nil {
+		// TODO: use configured logger for this server
+		log.Printf("could not hash password: %v", err)
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "invalid password"})
+	}
 	newUser.Password = hashedPassword
 
 	// assigns ID to newUser
@@ -51,6 +58,7 @@ func checkPasswordRequirements(password string) error {
 	return nil
 }
 
-func hashPassword(raw string) string {
-	return raw + "hi"
+func hashPassword(raw string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(raw), bcrypt.DefaultCost)
+	return string(bytes), err
 }
