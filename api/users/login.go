@@ -2,9 +2,11 @@ package users
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/hrand1005/training-notebook/models"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -34,7 +36,7 @@ func (u *user) Login(c *gin.Context) {
 
 func AuthenticateUser(user *models.User, credentials models.Credentails) (string, error) {
 	if checkPasswordHash(user.Password, credentials.Password) {
-		return buildToken(user), nil
+		return buildToken(user)
 	}
 
 	return "", fmt.Errorf("incorrect password")
@@ -47,6 +49,19 @@ func checkPasswordHash(hash, password string) bool {
 	return true
 }
 
-func buildToken(user *models.User) string {
-	return user.Name + user.Password
+type claims struct {
+	UserID models.UserID
+	jwt.StandardClaims
+}
+
+func buildToken(user *models.User) (string, error) {
+	// TODO: get the signing key from super secret env var
+	signingKey := []byte("oi bruv here's ur key")
+	jwtClaims := &claims{
+		UserID: user.ID,
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaims)
+	tokenString, err := token.SignedString(signingKey)
+	log.Printf("Error: %v", err)
+	return tokenString, err
 }

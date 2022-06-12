@@ -23,6 +23,7 @@ func TestLogin(t *testing.T) {
 		Name:     testUserName,
 		Password: hashedPassword,
 	}
+	testToken, _ := buildToken(testUser)
 
 	tests := []struct {
 		name        string
@@ -43,7 +44,7 @@ func TestLogin(t *testing.T) {
 				},
 			},
 			wantCode:  http.StatusOK,
-			wantToken: buildToken(testUser),
+			wantToken: testToken,
 		},
 	}
 	for _, v := range tests {
