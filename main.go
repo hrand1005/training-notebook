@@ -8,6 +8,7 @@ import (
 	"os/signal"
 
 	"github.com/hrand1005/training-notebook/server"
+	"github.com/joho/godotenv"
 )
 
 var prodMode = flag.Bool("prod", false, "Run in production mode and serve static files")
@@ -15,6 +16,9 @@ var configFile = flag.String("config", "", "Path to file containing server confi
 
 func main() {
 	flag.Parse()
+	if err := godotenv.Load(); err != nil {
+		log.Fatalf("failed to load env variables for signing key: %v", err)
+	}
 
 	// load server configs
 	srvConf, err := loadConfig(*prodMode, *configFile)

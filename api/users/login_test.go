@@ -66,12 +66,11 @@ func TestLogin(t *testing.T) {
 		// execute create with the test context
 		u.Login(c)
 
-		fmt.Printf("Wanted token: %s\nGot response: %v", v.wantToken, w.Body)
 		// check response code
 		if v.wantCode != w.Code {
 			t.Fatalf("Wanted code: %v\nGot code: %v\n", v.wantCode, w.Code)
 		}
 
-		fmt.Printf("Wanted token: %s\nGot response: %v", v.wantToken, w.Body)
+		//fmt.Printf("Wanted token: %s\nGot response: %v", v.wantToken, w.Body)
 	}
 }

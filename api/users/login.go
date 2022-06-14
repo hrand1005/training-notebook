@@ -2,8 +2,8 @@ package users
 
 import (
 	"fmt"
-	"log"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
@@ -55,13 +55,10 @@ type claims struct {
 }
 
 func buildToken(user *models.User) (string, error) {
-	// TODO: get the signing key from super secret env var
-	signingKey := []byte("oi bruv here's ur key")
+	signingKey := []byte(os.Getenv("SIGNING_KEY"))
 	jwtClaims := &claims{
 		UserID: user.ID,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaims)
-	tokenString, err := token.SignedString(signingKey)
-	log.Printf("Error: %v", err)
-	return tokenString, err
+	return token.SignedString(signingKey)
 }
