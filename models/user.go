@@ -5,7 +5,7 @@ type UserID int
 
 // User defines the model of the user resource
 type User struct {
-	ID       UserID `json:"id"`
+	ID       UserID `json:"user-id"`
 	Name     string `json:"name"`
 	Password string `json:"password,omitempty"`
 }

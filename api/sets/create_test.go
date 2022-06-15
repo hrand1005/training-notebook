@@ -36,7 +36,7 @@ func TestCreateSet(t *testing.T) {
 			},
 			wantCode: http.StatusCreated,
 			wantResp: *bytes.NewBufferString(` {
-					"id": 1,
+					"set-id": 1,
 					"movement": "Barbell Curl",
 					"volume": 1,
 					"intensity": 100

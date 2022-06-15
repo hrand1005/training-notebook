@@ -18,7 +18,8 @@ type Set struct {
 	//
 	// required: true
 	// min: 1
-	ID            SetID   `json:"id"`
+	ID            SetID   `json:"set-id"`
+	UID           UserID  `json:"user-id,omitempty"`
 	Movement      string  `json:"movement" binding:"movement"`
 	Volume        float64 `json:"volume" binding:"gt=0"`
 	Intensity     float64 `json:"intensity" binding:"gt=0,lte=100"`

@@ -37,7 +37,7 @@ func TestUpdateUser(t *testing.T) {
 			} `),
 			wantCode: http.StatusOK,
 			wantResp: *bytes.NewBufferString(` {
-					"id": 1,
+					"user-id": 1,
 					"name": "Keonwoo Oh"
 			} `),
 		},

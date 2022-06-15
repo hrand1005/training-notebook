@@ -39,7 +39,7 @@ func TestReadSingleUser(t *testing.T) {
 			wantCode: http.StatusOK,
 			wantResp: *bytes.NewBufferString(`
 				{
-					"id": 1,
+					"user-id": 1,
 					"name": "Ray"
 				}
 			`),
@@ -135,11 +135,11 @@ func TestReadAllUsers(t *testing.T) {
 			wantCode: http.StatusOK,
 			wantResp: bytes.NewBufferString(`[
 				{
-					"id": 1,
+					"user-id": 1,
 					"name": "nendo"
 				},
 				{
-					"id": 2,
+					"user-id": 2,
 					"name": "yert"
 				}
 			]`),

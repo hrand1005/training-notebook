@@ -39,7 +39,7 @@ func TestUpdateSet(t *testing.T) {
 			} `),
 			wantCode: http.StatusOK,
 			wantResp: *bytes.NewBufferString(` {
-					"id": 1,
+					"set-id": 1,
 					"movement": "Dumbbell Curl",
 					"volume": 5,
 					"intensity": 80

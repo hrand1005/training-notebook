@@ -36,7 +36,7 @@ func TestSignup(t *testing.T) {
 			},
 			wantCode: http.StatusCreated,
 			wantResp: *bytes.NewBufferString(` {
-					"id": 1,
+					"user-id": 1,
 					"name": "hildegard"
 			} `),
 		},

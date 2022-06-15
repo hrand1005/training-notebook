@@ -41,7 +41,7 @@ func TestReadSingleSet(t *testing.T) {
 			wantCode: http.StatusOK,
 			wantResp: *bytes.NewBufferString(`
 				{
-					"id": 1,
+					"set-id": 1,
 					"movement": "Squat",
 					"volume": 5,
 					"intensity": 80
@@ -143,13 +143,13 @@ func TestReadAllSets(t *testing.T) {
 			wantCode: http.StatusOK,
 			wantResp: *bytes.NewBufferString(`[
 				{
-					"id": 1,
+					"set-id": 1,
 					"movement": "Squat",
 					"volume": 5,
 					"intensity": 80
 				},
 				{
-					"id": 2,
+					"set-id": 2,
 					"movement": "Deadlift",
 					"volume": 4,
 					"intensity": 85
