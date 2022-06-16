@@ -21,13 +21,13 @@ func New(db data.UserDB) (*user, error) {
 
 func (u *user) RegisterHandlers(g *gin.RouterGroup) {
 	g.GET("/", u.ReadAll)
-	g.GET("/:id", u.Read)
+	g.GET("/:userID", u.Read)
 	g.POST("/", u.Create)
-	g.PUT("/:id", u.Update)
+	g.PUT("/:userID", u.Update)
 }
 
 func userIDFromParams(c *gin.Context) (models.UserID, error) {
-	id, err := strconv.Atoi(c.Param("id"))
+	id, err := strconv.Atoi(c.Param("userID"))
 	if err != nil {
 		return data.InvalidUserID, err
 	}

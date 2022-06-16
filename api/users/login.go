@@ -13,10 +13,10 @@ import (
 
 // token settings
 const (
-	loginCookieName     = "token"
-	loginCookieMaxAge   = 3600
-	loginCookieSecure   = false
-	loginCookieHTTPOnly = true
+	LoginCookieName     = "token"
+	LoginCookieMaxAge   = 3600
+	LoginCookieSecure   = false
+	LoginCookieHTTPOnly = true
 )
 
 func (u *user) Login(c *gin.Context) {
@@ -40,7 +40,7 @@ func (u *user) Login(c *gin.Context) {
 	}
 
 	// TODO: get path and domain from configs or env
-	c.SetCookie(loginCookieName, token, loginCookieMaxAge, "", "", loginCookieSecure, loginCookieHTTPOnly)
+	c.SetCookie(LoginCookieName, token, LoginCookieMaxAge, "", "", LoginCookieSecure, LoginCookieHTTPOnly)
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "logged in successfully"})
 }
 
@@ -59,14 +59,15 @@ func checkPasswordHash(hash, password string) bool {
 	return true
 }
 
-type claims struct {
+type Claims struct {
 	UserID models.UserID
 	jwt.StandardClaims
 }
 
 func buildToken(user *models.User) (string, error) {
+	// TODO: get this from configs
 	signingKey := []byte(os.Getenv("SIGNING_KEY"))
-	jwtClaims := &claims{
+	jwtClaims := &Claims{
 		UserID: user.ID,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaims)
