@@ -11,6 +11,14 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// token settings
+const (
+	loginCookieName     = "token"
+	loginCookieMaxAge   = 3600
+	loginCookieSecure   = false
+	loginCookieHTTPOnly = true
+)
+
 func (u *user) Login(c *gin.Context) {
 	var credentials models.Credentails
 
@@ -31,7 +39,9 @@ func (u *user) Login(c *gin.Context) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, token)
+	// TODO: get path and domain from configs or env
+	c.SetCookie(loginCookieName, token, loginCookieMaxAge, "", "", loginCookieSecure, loginCookieHTTPOnly)
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "logged in successfully"})
 }
 
 func AuthenticateUser(user *models.User, credentials models.Credentails) (string, error) {

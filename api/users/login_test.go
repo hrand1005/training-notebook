@@ -71,6 +71,10 @@ func TestLogin(t *testing.T) {
 			t.Fatalf("Wanted code: %v\nGot code: %v\n", v.wantCode, w.Code)
 		}
 
-		//fmt.Printf("Wanted token: %s\nGot response: %v", v.wantToken, w.Body)
+		// check that the token is the only cookie set in the response
+		gotToken := w.Result().Cookies()[0].Value
+		if v.wantToken != gotToken {
+			t.Fatalf("Wanted token: %s\nGot token: %s\n", v.wantToken, gotToken)
+		}
 	}
 }
