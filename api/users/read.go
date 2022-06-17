@@ -44,7 +44,7 @@ func (u *user) ReadAll(c *gin.Context) {
 // Read is the handler for read requests on the user resource where an id is
 // specified.
 func (s *user) Read(c *gin.Context) {
-	userID, err := userIDFromParams(c)
+	userID, err := UserIDFromParams(c)
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": ErrInvalidUserID})
 		return

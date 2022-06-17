@@ -28,7 +28,7 @@ func (s *set) Update(c *gin.Context) {
 		return
 	}
 
-	setID, err := setIDFromParams(c)
+	setID, err := SetIDFromParams(c)
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": ErrInvalidSetID})
 		return

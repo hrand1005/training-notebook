@@ -78,7 +78,7 @@ func TestDeleteSet(t *testing.T) {
 		gin.SetMode(gin.TestMode)
 		w := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(w)
-		c.AddParam("setID", v.id)
+		c.AddParam(SetIDFromParamsKey, v.id)
 
 		// execute Delete on test context
 		ts.Delete(c)

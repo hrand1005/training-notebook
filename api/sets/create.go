@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hrand1005/training-notebook/api/users"
 	"github.com/hrand1005/training-notebook/models"
 )
 
@@ -16,6 +17,11 @@ import (
 
 // Create is the handler for create requests on the set resource.
 func (s *set) Create(c *gin.Context) {
+	userID, err := users.UserIDFromContext(c)
+	if err != nil {
+		c.IndentedJSON(http.StatusUnauthorized, gin.H{"message": "must be logged in with valid user to perform this function"})
+	}
+
 	var newSet models.Set
 
 	if err := c.BindJSON(&newSet); err != nil {
@@ -32,5 +38,6 @@ func (s *set) Create(c *gin.Context) {
 	}
 
 	newSet.ID = id
+	newSet.UID = userID
 	c.IndentedJSON(http.StatusCreated, newSet)
 }

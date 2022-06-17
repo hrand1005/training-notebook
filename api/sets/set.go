@@ -8,11 +8,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
+	"github.com/hrand1005/training-notebook/api/users"
 	"github.com/hrand1005/training-notebook/data"
 	"github.com/hrand1005/training-notebook/models"
 )
 
 var ErrInvalidSetID = "Invalid set ID"
+
+// Keys used to retrieve values from gin.Context
+const (
+	SetIDFromParamsKey = "paramSetID"
+)
 
 // New registers custom validators with the validator engine and returns the
 // handler for the set resource.
@@ -31,7 +37,7 @@ func (s *set) RegisterHandlers(g *gin.RouterGroup) {
 	// register RequireAuthorization middleware so that each request
 	// on the sets requires token
 
-	//g.Use(RequireAuthorization)
+	g.Use(users.RequireAuthorization())
 	g.GET("/", s.ReadAll)
 	g.GET("/:setID", s.Read)
 	g.DELETE("/:setID", s.Delete)
@@ -51,8 +57,8 @@ func (s *set) RegisterHandlersWithUserAuthentication(g *gin.RouterGroup) {
 }
 */
 
-func setIDFromParams(c *gin.Context) (models.SetID, error) {
-	id, err := strconv.Atoi(c.Param("setID"))
+func SetIDFromParams(c *gin.Context) (models.SetID, error) {
+	id, err := strconv.Atoi(c.Param(SetIDFromParamsKey))
 	if err != nil {
 		return data.InvalidSetID, err
 	}

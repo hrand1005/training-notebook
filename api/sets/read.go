@@ -42,7 +42,7 @@ func (s *set) ReadAll(c *gin.Context) {
 // Read is the handler for read requests on the set resource where an id is
 // specified.
 func (s *set) Read(c *gin.Context) {
-	setID, err := setIDFromParams(c)
+	setID, err := SetIDFromParams(c)
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": ErrInvalidSetID})
 		return

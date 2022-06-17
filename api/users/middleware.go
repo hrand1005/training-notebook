@@ -12,6 +12,8 @@ import (
 )
 
 // TODO: authorization/permissions levels
+// RequireAuthorization checks that the LoginCookie is set in the http request. If not found, sets
+// StatusUnauthorized, else sets the token in the gin context.
 func RequireAuthorization( /*l AuthorizationLevel*/ ) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := c.Cookie(LoginCookieName)
@@ -25,8 +27,8 @@ func RequireAuthorization( /*l AuthorizationLevel*/ ) gin.HandlerFunc {
 			return
 		}
 
-		c.Set("userID", userID)
-
+		c.Set(UserIDFromContextKey, userID)
+		//
 		// user is authorized, continue chaining HandlerFuncs
 		c.Next()
 	}

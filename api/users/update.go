@@ -28,7 +28,7 @@ func (u *user) Update(c *gin.Context) {
 		return
 	}
 
-	userID, err := userIDFromParams(c)
+	userID, err := UserIDFromParams(c)
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": ErrInvalidUserID})
 		return

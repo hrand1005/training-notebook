@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hrand1005/training-notebook/api/users"
 	"github.com/hrand1005/training-notebook/data"
 	"github.com/hrand1005/training-notebook/models"
 )
@@ -17,13 +18,15 @@ import (
 func TestCreateSet(t *testing.T) {
 	tests := []struct {
 		name        string
+		userID      models.UserID
 		requestBody bytes.Buffer
 		db          *data.MockSetDB
 		wantCode    int
 		wantResp    bytes.Buffer
 	}{
 		{
-			name: "Valid request and db call returns StatusCreated",
+			name:   "Valid request and db call returns StatusCreated",
+			userID: 1,
 			requestBody: *bytes.NewBufferString(` {
 					"movement": "Barbell Curl",
 					"volume": 1,
@@ -37,6 +40,7 @@ func TestCreateSet(t *testing.T) {
 			wantCode: http.StatusCreated,
 			wantResp: *bytes.NewBufferString(` {
 					"set-id": 1,
+					"user-id": 1,
 					"movement": "Barbell Curl",
 					"volume": 1,
 					"intensity": 100
@@ -144,6 +148,9 @@ func TestCreateSet(t *testing.T) {
 		bodyReader := bytes.NewReader(v.requestBody.Bytes())
 		// method/uri parsing exceed the scope of this test
 		c.Request, _ = http.NewRequest("", "", bodyReader)
+
+		// set userID in context
+		c.Set(users.UserIDFromContextKey, v.userID)
 
 		// execute create with the test context
 		ts.Create(c)

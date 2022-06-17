@@ -178,7 +178,7 @@ func TestUpdateSet(t *testing.T) {
 		bodyReader := bytes.NewReader(v.requestBody.Bytes())
 
 		// add id to URL params
-		c.AddParam("setID", v.id)
+		c.AddParam(SetIDFromParamsKey, v.id)
 		c.Request, _ = http.NewRequest("", "", bodyReader)
 
 		// execute update with the test context

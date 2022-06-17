@@ -18,7 +18,7 @@ import (
 // Delete is the handler for delete requests on the set resource. An id must be
 // specified.
 func (s *set) Delete(c *gin.Context) {
-	setID, err := setIDFromParams(c)
+	setID, err := SetIDFromParams(c)
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": ErrInvalidSetID})
 		return
