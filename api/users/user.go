@@ -20,10 +20,20 @@ func New(db data.UserDB) (*user, error) {
 }
 
 func (u *user) RegisterHandlers(g *gin.RouterGroup) {
-	g.GET("/", u.ReadAll)
-	g.GET("/:userID", u.Read)
-	g.POST("/", u.Create)
-	g.PUT("/:userID", u.Update)
+	// TODO: REQUIRE ADMIN PERMS
+	//g.GET("/", u.ReadAll)
+	//g.POST("/", u.Create)
+
+	// Authorization NOT required
+	g.POST("/signup", u.Signup)
+	g.POST("/login", u.Login)
+
+	// Require User Authentication for Read/Updates on a user
+	authGroup := g.Group("")
+	authGroup.Use(RequireAuthorization())
+	authGroup.GET("/:userID", u.Read)
+	authGroup.PUT("/:userID", u.Update)
+
 }
 
 func userIDFromParams(c *gin.Context) (models.UserID, error) {

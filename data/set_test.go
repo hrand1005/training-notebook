@@ -310,7 +310,13 @@ func TestDeleteSet(t *testing.T) {
 const testSetDB = "testSetDB.sqlite"
 
 func setupTestSetDB() *setDB {
-	sd, err := newSetDB(testSetDB)
+	db, err := SqliteDB(testSetDB)
+	if err != nil {
+		msg := fmt.Sprintf("failed to setup test db: %v, err: %v", testSetDB, err)
+		panic(msg)
+	}
+
+	sd, err := newSetDB(db)
 	if err != nil {
 		msg := fmt.Sprintf("failed to setup test db: %v, err: %v", testSetDB, err)
 		panic(msg)

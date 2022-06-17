@@ -3,10 +3,8 @@ package data
 import (
 	"database/sql"
 	"fmt"
-	"os"
 
 	"github.com/hrand1005/training-notebook/models"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 const (
@@ -43,29 +41,14 @@ type setDB struct {
 	handle *sql.DB
 }
 
-// NewSetDB loads the data from the given file and returns a SetDB interface or error
-func NewSetDB(filename string) (SetDB, error) {
-	return newSetDB(filename)
+// NewSetDB loads the data from the given sql db handle and returns a SetDB interface or error
+func NewSetDB(db *sql.DB) (SetDB, error) {
+	return newSetDB(db)
 }
 
-// newSetDB returns the underlying setDB and error created from the given filename.
-func newSetDB(filename string) (*setDB, error) {
-	// Create new db file if one doesn't exist
-	_, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		file, err := os.Create(filename)
-		file.Close()
-		if err != nil {
-			return nil, fmt.Errorf("failed to create db %s: %v", filename, err)
-		}
-	}
-
-	db, err := sql.Open("sqlite3", filename)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load %s: %v", filename, err)
-	}
-
-	_, err = db.Exec(createSetTable)
+// newSetDB returns the underlying setDB and error created from the given sql db handle.
+func newSetDB(db *sql.DB) (*setDB, error) {
+	_, err := db.Exec(createSetTable)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't prepare SQL statement:\n%s\nerr: %v", createSetTable, err)
 	}

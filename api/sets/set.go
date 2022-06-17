@@ -28,7 +28,10 @@ func New(db data.SetDB) (*set, error) {
 }
 
 func (s *set) RegisterHandlers(g *gin.RouterGroup) {
-	// g.Use(RequireAuthorization)
+	// register RequireAuthorization middleware so that each request
+	// on the sets requires token
+
+	//g.Use(RequireAuthorization)
 	g.GET("/", s.ReadAll)
 	g.GET("/:setID", s.Read)
 	g.DELETE("/:setID", s.Delete)
