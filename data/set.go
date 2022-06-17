@@ -14,16 +14,18 @@ const (
 	createSetTable = `
 	CREATE TABLE IF NOT EXISTS sets (
 		id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+		userid INT,
 		movement TEXT,
 		volume FLOAT,
 		intensity FLOAT
 	);
 	`
-	insertSet     = `INSERT OR IGNORE INTO sets(movement, volume, intensity) VALUES (?, ?, ?);`
-	selectSetByID = `SELECT movement, volume, intensity FROM sets WHERE id=?;`
-	selectAllSets = `SELECT * FROM sets;`
-	updateSetByID = `UPDATE sets SET movement=?, volume=?, intensity=? WHERE id=?;`
-	deleteSetByID = `DELETE FROM sets WHERE id=?;`
+	insertSet          = `INSERT OR IGNORE INTO sets(userid, movement, volume, intensity) VALUES (?, ?, ?, ?);`
+	selectSetByID      = `SELECT userid, movement, volume, intensity FROM sets WHERE id=?;`
+	selectSetsByUserID = `SELECT id, movement, volume, intensity FROM sets WHERE userid=?;`
+	selectAllSets      = `SELECT id, userid, movement, volume, intensity FROM sets;`
+	updateSetByID      = `UPDATE sets SET movement=?, volume=?, intensity=? WHERE id=?;`
+	deleteSetByID      = `DELETE FROM sets WHERE id=?;`
 )
 
 // SetDB defines the interface for accessing/manipulating set data
@@ -63,7 +65,7 @@ func newSetDB(db *sql.DB) (*setDB, error) {
 // Returns the assigned id upon successfully inserting the provided set, and nil error.
 // If an error occurs, returns -1 for the id and the error value.
 func (sd *setDB) AddSet(s *models.Set) (models.SetID, error) {
-	result, err := sd.handle.Exec(insertSet, s.Movement, s.Volume, s.Intensity)
+	result, err := sd.handle.Exec(insertSet, s.UID, s.Movement, s.Volume, s.Intensity)
 	if err != nil {
 		return InvalidSetID, fmt.Errorf("encountered error executing SQL statement: %v", err)
 	}
@@ -85,18 +87,20 @@ func (sd *setDB) Sets() ([]*models.Set, error) {
 	}
 	defer rows.Close()
 
-	sets := make([]*models.Set, 0)
+	sets := make([]*models.Set, 0, 10)
 	for rows.Next() {
 		var id models.SetID
+		var userID models.UserID
 		var movement string
 		var volume float64
 		var intensity float64
-		if err := rows.Scan(&id, &movement, &volume, &intensity); err != nil {
+		if err := rows.Scan(&id, &userID, &movement, &volume, &intensity); err != nil {
 			return nil, fmt.Errorf("encountered error scanning row: %v", err)
 		}
 
 		sets = append(sets, &models.Set{
 			ID:        id,
+			UID:       userID,
 			Movement:  movement,
 			Volume:    volume,
 			Intensity: intensity,
@@ -114,10 +118,11 @@ func (sd *setDB) Sets() ([]*models.Set, error) {
 // Returns a set matching the given ID in the database.
 // If no set with the given id is found, returns ErrNotFound.
 func (sd *setDB) SetByID(id models.SetID) (*models.Set, error) {
+	var userID int
 	var movement string
 	var volume float64
 	var intensity float64
-	err := sd.handle.QueryRow(selectSetByID, id).Scan(&movement, &volume, &intensity)
+	err := sd.handle.QueryRow(selectSetByID, id).Scan(&userID, &movement, &volume, &intensity)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, ErrNotFound
@@ -127,10 +132,44 @@ func (sd *setDB) SetByID(id models.SetID) (*models.Set, error) {
 
 	return &models.Set{
 		ID:        id,
+		UID:       models.UserID(userID),
 		Movement:  movement,
 		Volume:    volume,
 		Intensity: intensity,
 	}, nil
+}
+
+// SetByUserID implements the SetDB interface method for finding a particular set in the database.
+// Returns sets with the matching UserID from the database.
+// An empty slice of sets is considered a valid result of the database query.
+func (sd *setDB) SetsByUserID(userID models.UserID) ([]*models.Set, error) {
+	rows, err := sd.handle.Query(selectSetsByUserID, userID)
+	if err != nil {
+		return nil, fmt.Errorf("error executing SQL query: %v", err)
+	}
+	defer rows.Close()
+
+	sets := make([]*models.Set, 0, 10)
+	for rows.Next() {
+		var id models.SetID
+		var userID models.UserID
+		var movement string
+		var volume float64
+		var intensity float64
+		if err := rows.Scan(&id, &userID, &movement, &volume, &intensity); err != nil {
+			return nil, fmt.Errorf("encountered error scanning row: %v", err)
+		}
+
+		sets = append(sets, &models.Set{
+			ID:        id,
+			UID:       userID,
+			Movement:  movement,
+			Volume:    volume,
+			Intensity: intensity,
+		})
+	}
+
+	return sets, nil
 }
 
 // UpdateSet implements the SetDB interface method for updating a particular set in the database.

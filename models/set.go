@@ -39,7 +39,7 @@ var MovementValidator validator.Func = func(fl validator.FieldLevel) bool {
 
 // SetsEqual returns true if all non-id fields of the set are equal, and false otherwise.
 func SetsEqual(set1, set2 *Set) bool {
-	if set1.Movement != set2.Movement || set1.Volume != set2.Volume || set1.Intensity != set2.Intensity {
+	if set1.UID != set2.UID || set1.Movement != set2.Movement || set1.Volume != set2.Volume || set1.Intensity != set2.Intensity {
 		return false
 	}
 	return true
