@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hrand1005/training-notebook/api/users"
 	"github.com/hrand1005/training-notebook/data"
 	"github.com/hrand1005/training-notebook/models"
 )
@@ -116,23 +117,27 @@ func TestReadSingleSet(t *testing.T) {
 func TestReadAllSets(t *testing.T) {
 	tests := []struct {
 		name     string
+		userID   models.UserID
 		db       *data.MockSetDB
 		wantCode int
 		wantResp bytes.Buffer
 	}{
 		{
-			name: "Valid db call with multiple sets returns StatusOK",
+			name:   "Valid db call with multiple sets returns StatusOK",
+			userID: 1,
 			db: &data.MockSetDB{
-				SetsStub: func() ([]*models.Set, error) {
+				SetsByUserIDStub: func(id models.UserID) ([]*models.Set, error) {
 					return []*models.Set{
 						{
 							ID:        1,
+							UID:       id,
 							Movement:  "Squat",
 							Volume:    5,
 							Intensity: 80,
 						},
 						{
 							ID:        2,
+							UID:       id,
 							Movement:  "Deadlift",
 							Volume:    4,
 							Intensity: 85,
@@ -144,12 +149,14 @@ func TestReadAllSets(t *testing.T) {
 			wantResp: *bytes.NewBufferString(`[
 				{
 					"set-id": 1,
+					"user-id": 1,
 					"movement": "Squat",
 					"volume": 5,
 					"intensity": 80
 				},
 				{
 					"set-id": 2,
+					"user-id": 1,
 					"movement": "Deadlift",
 					"volume": 4,
 					"intensity": 85
@@ -157,9 +164,10 @@ func TestReadAllSets(t *testing.T) {
 			]`),
 		},
 		{
-			name: "Valid db call with empty set returns StatusOK",
+			name:   "Valid db call with empty set returns StatusOK",
+			userID: 1,
 			db: &data.MockSetDB{
-				SetsStub: func() ([]*models.Set, error) {
+				SetsByUserIDStub: func(id models.UserID) ([]*models.Set, error) {
 					return nil, nil
 				},
 			},
@@ -167,9 +175,34 @@ func TestReadAllSets(t *testing.T) {
 			wantResp: *bytes.NewBufferString(`[]`),
 		},
 		{
-			name: "Invalid db call returns InternalServerError",
+			name:   "Invalid db call returns InternalServerError",
+			userID: 1,
 			db: &data.MockSetDB{
-				SetsStub: func() ([]*models.Set, error) {
+				SetsByUserIDStub: func(id models.UserID) ([]*models.Set, error) {
+					return nil, fmt.Errorf("Expected Error")
+				},
+			},
+			wantCode: http.StatusInternalServerError,
+			wantResp: *bytes.NewBufferString(`{
+				"message": "Expected Error"
+			}`),
+		},
+		{
+			name:   "Valid db call with empty set returns StatusOK",
+			userID: 1,
+			db: &data.MockSetDB{
+				SetsByUserIDStub: func(id models.UserID) ([]*models.Set, error) {
+					return nil, nil
+				},
+			},
+			wantCode: http.StatusOK,
+			wantResp: *bytes.NewBufferString(`[]`),
+		},
+		{
+			name:   "Invalid db call returns InternalServerError",
+			userID: 1,
+			db: &data.MockSetDB{
+				SetsByUserIDStub: func(id models.UserID) ([]*models.Set, error) {
 					return nil, fmt.Errorf("Expected Error")
 				},
 			},
@@ -189,6 +222,9 @@ func TestReadAllSets(t *testing.T) {
 		gin.SetMode(gin.TestMode)
 		w := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(w)
+
+		// set userID in context
+		c.Set(users.UserIDFromContextKey, v.userID)
 
 		// execute ReadAll with test context
 		ts.ReadAll(c)

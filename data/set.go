@@ -33,6 +33,7 @@ type SetDB interface {
 	AddSet(s *models.Set) (models.SetID, error)
 	Sets() ([]*models.Set, error)
 	SetByID(id models.SetID) (*models.Set, error)
+	SetsByUserID(models.UserID) ([]*models.Set, error)
 	UpdateSet(id models.SetID, s *models.Set) error
 	DeleteSet(id models.SetID) error
 	Close() error

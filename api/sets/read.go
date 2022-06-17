@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hrand1005/training-notebook/api/users"
 	"github.com/hrand1005/training-notebook/data"
 	"github.com/hrand1005/training-notebook/models"
 )
@@ -18,7 +19,13 @@ import (
 // ReadAll is the handler for read requests on the set resource where no id is
 // specified. Returns all sets on this resource's data source.
 func (s *set) ReadAll(c *gin.Context) {
-	sets, err := s.db.Sets()
+	userID, err := users.UserIDFromContext(c)
+	if err != nil {
+		c.IndentedJSON(http.StatusUnauthorized, gin.H{"message": "you must be logged in to perform this action"})
+		return
+	}
+
+	sets, err := s.db.SetsByUserID(userID)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
