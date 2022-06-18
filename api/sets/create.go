@@ -30,7 +30,10 @@ func (s *set) Create(c *gin.Context) {
 		return
 	}
 
-	// assigns ID to newSet
+	// created set should always have the id of the logged in user
+	newSet.UID = userID
+
+	// assigns ID to newSet upon entry
 	id, err := s.db.AddSet(&newSet)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
@@ -38,6 +41,5 @@ func (s *set) Create(c *gin.Context) {
 	}
 
 	newSet.ID = id
-	newSet.UID = userID
 	c.IndentedJSON(http.StatusCreated, newSet)
 }

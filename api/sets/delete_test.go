@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hrand1005/training-notebook/api/users"
 	"github.com/hrand1005/training-notebook/data"
 	"github.com/hrand1005/training-notebook/models"
 )
@@ -18,28 +19,31 @@ func TestDeleteSet(t *testing.T) {
 	tests := []struct {
 		name     string
 		db       *data.MockSetDB
-		id       string
+		setID    string
+		userID   models.UserID
 		wantCode int
 		wantResp bytes.Buffer
 	}{
 		{
 			name: "Set found with valid db call returns StatusNoContent",
 			db: &data.MockSetDB{
-				DeleteSetStub: func(id models.SetID) error {
+				DeleteSetForUserStub: func(setID models.SetID, userID models.UserID) error {
 					return nil
 				},
 			},
-			id:       "1",
+			setID:    "1",
+			userID:   1,
 			wantCode: http.StatusNoContent,
 		},
 		{
 			name: "Set not found returns StatusNotFound",
 			db: &data.MockSetDB{
-				DeleteSetStub: func(id models.SetID) error {
+				DeleteSetForUserStub: func(setID models.SetID, userID models.UserID) error {
 					return data.ErrNotFound
 				},
 			},
-			id:       "4",
+			setID:    "4",
+			userID:   1,
 			wantCode: http.StatusNotFound,
 			wantResp: *bytes.NewBufferString(`{
 				"message": "no such set with id 4"
@@ -48,11 +52,12 @@ func TestDeleteSet(t *testing.T) {
 		{
 			name: "Invalid db query returns InternalServerError",
 			db: &data.MockSetDB{
-				DeleteSetStub: func(id models.SetID) error {
+				DeleteSetForUserStub: func(setID models.SetID, userID models.UserID) error {
 					return fmt.Errorf("Expected error")
 				},
 			},
-			id:       "4",
+			setID:    "4",
+			userID:   1,
 			wantCode: http.StatusInternalServerError,
 			wantResp: *bytes.NewBufferString(`{
 				"message": "Expected error"
@@ -60,7 +65,8 @@ func TestDeleteSet(t *testing.T) {
 		},
 		{
 			name:     "Invalid params returns StatusBadRequest",
-			id:       "-1",
+			setID:    "-1",
+			userID:   1,
 			wantCode: http.StatusBadRequest,
 			wantResp: *bytes.NewBufferString(fmt.Sprintf(`{
 				"message": %q
@@ -78,7 +84,8 @@ func TestDeleteSet(t *testing.T) {
 		gin.SetMode(gin.TestMode)
 		w := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(w)
-		c.AddParam(SetIDFromParamsKey, v.id)
+		c.AddParam(SetIDFromParamsKey, v.setID)
+		c.Set(users.UserIDFromContextKey, v.userID)
 
 		// execute Delete on test context
 		ts.Delete(c)

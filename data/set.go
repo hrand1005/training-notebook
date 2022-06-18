@@ -22,14 +22,18 @@ const (
 	`
 	insertSet              = `INSERT OR IGNORE INTO sets(userid, movement, volume, intensity) VALUES (?, ?, ?, ?);`
 	selectSetByID          = `SELECT userid, movement, volume, intensity FROM sets WHERE id=?;`
-	selectSetByIDAndUserID = `SELECT movement, volume, intensity FROM sets WHERE id=? and userid=?;`
+	selectSetByIDAndUserID = `SELECT movement, volume, intensity FROM sets WHERE id=? AND userid=?;`
 	selectAllSets          = `SELECT id, userid, movement, volume, intensity FROM sets;`
 	selectSetsByUserID     = `SELECT id, movement, volume, intensity FROM sets WHERE userid=?;`
 	updateSetByID          = `UPDATE sets SET movement=?, volume=?, intensity=? WHERE id=?;`
+	updateSetByIDAndUserID = `UPDATE sets SET movement=?, volume=?, intensity=? WHERE id=? AND userid=?;`
 	deleteSetByID          = `DELETE FROM sets WHERE id=?;`
+	deleteSetByIDAndUserID = `DELETE FROM sets WHERE id=? AND userid=?;`
 )
 
 // SetDB defines the interface for accessing/manipulating set data
+// Naive implementation duplicates logic for slightly different where clauses
+// TODO: smarter filtering to reduce duplicate code
 type SetDB interface {
 	AddSet(s *models.Set) (models.SetID, error)
 	Sets() ([]*models.Set, error)
@@ -37,7 +41,9 @@ type SetDB interface {
 	SetByID(id models.SetID) (*models.Set, error)
 	SetByIDForUser(models.SetID, models.UserID) (*models.Set, error)
 	UpdateSet(id models.SetID, s *models.Set) error
+	UpdateSetForUser(setID models.SetID, userID models.UserID, s *models.Set) error
 	DeleteSet(id models.SetID) error
+	DeleteSetForUser(setID models.SetID, userID models.UserID) error
 	Close() error
 }
 
@@ -223,11 +229,55 @@ func (sd *setDB) UpdateSet(id models.SetID, s *models.Set) error {
 	return nil
 }
 
+// UpdateSetForUser implements the SetDB interface method for updating a particular set in the database.
+// UpdateSetForUser performs UpdateSet where userid equals the userID param.
+func (sd *setDB) UpdateSetForUser(setID models.SetID, userID models.UserID, s *models.Set) error {
+	result, err := sd.handle.Exec(updateSetByIDAndUserID, s.Movement, s.Volume, s.Intensity, setID, userID)
+	if err != nil {
+		return fmt.Errorf("failed to update set: %v", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get RowsAffected by update: %v", err)
+	}
+
+	if rowsAffected != 1 {
+		if rowsAffected == 0 {
+			return ErrNotFound
+		}
+		return fmt.Errorf("unexpected number of affected rows: %v", rowsAffected)
+	}
+
+	return nil
+}
+
 // DeleteSet implements the SetDB interface method for removing a particular set from the database.
 // Deletes the record of the set matching the given id.
 // If no set with the given id is found, returns ErrNotFound.
 func (sd *setDB) DeleteSet(id models.SetID) error {
 	result, err := sd.handle.Exec(deleteSetByID, id)
+	if err != nil {
+		return fmt.Errorf("error executing SQL statement: %v", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("encountered error checking rows affected: %v", err)
+	}
+	if rowsAffected != 1 {
+		if rowsAffected == 0 {
+			return ErrNotFound
+		}
+		return fmt.Errorf("unexpected number of affected rows: %v", rowsAffected)
+	}
+
+	return nil
+}
+
+// DeleteSetForUser performs DeleteSet where userid equals userID param
+func (sd *setDB) DeleteSetForUser(setID models.SetID, userID models.UserID) error {
+	result, err := sd.handle.Exec(deleteSetByIDAndUserID, setID, userID)
 	if err != nil {
 		return fmt.Errorf("error executing SQL statement: %v", err)
 	}

@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hrand1005/training-notebook/api/users"
 	"github.com/hrand1005/training-notebook/data"
 	"github.com/hrand1005/training-notebook/models"
 )
@@ -19,7 +20,8 @@ func TestUpdateSet(t *testing.T) {
 		name string
 		db   *data.MockSetDB
 		// id from URL, not part of body for updates
-		id          string
+		setID       string
+		userID      models.UserID
 		requestBody bytes.Buffer
 		wantCode    int
 		wantResp    bytes.Buffer
@@ -27,11 +29,12 @@ func TestUpdateSet(t *testing.T) {
 		{
 			name: "Valid set updated returns StatusOK",
 			db: &data.MockSetDB{
-				UpdateSetStub: func(id models.SetID, s *models.Set) error {
+				UpdateSetForUserStub: func(setID models.SetID, userID models.UserID, s *models.Set) error {
 					return nil
 				},
 			},
-			id: "1",
+			setID:  "1",
+			userID: 1,
 			requestBody: *bytes.NewBufferString(` {
 					"movement": "Dumbbell Curl",
 					"volume": 5,
@@ -40,6 +43,7 @@ func TestUpdateSet(t *testing.T) {
 			wantCode: http.StatusOK,
 			wantResp: *bytes.NewBufferString(` {
 					"set-id": 1,
+					"user-id": 1,
 					"movement": "Dumbbell Curl",
 					"volume": 5,
 					"intensity": 80
@@ -48,11 +52,12 @@ func TestUpdateSet(t *testing.T) {
 		{
 			name: "Invalid id param returns StatusBadRequest",
 			db: &data.MockSetDB{
-				UpdateSetStub: func(id models.SetID, s *models.Set) error {
+				UpdateSetForUserStub: func(setID models.SetID, userID models.UserID, s *models.Set) error {
 					return data.ErrNotFound
 				},
 			},
-			id: "-1",
+			setID:  "-1",
+			userID: 1,
 			requestBody: *bytes.NewBufferString(` {
 					"movement": "Dumbbell Curl",
 					"volume": 5,
@@ -66,11 +71,12 @@ func TestUpdateSet(t *testing.T) {
 		{
 			name: "Set not found returns StatusNotFound",
 			db: &data.MockSetDB{
-				UpdateSetStub: func(id models.SetID, s *models.Set) error {
+				UpdateSetForUserStub: func(setID models.SetID, userID models.UserID, s *models.Set) error {
 					return data.ErrNotFound
 				},
 			},
-			id: "2",
+			setID:  "2",
+			userID: 1,
 			requestBody: *bytes.NewBufferString(` {
 					"movement": "Dumbbell Curl",
 					"volume": 5,
@@ -84,11 +90,12 @@ func TestUpdateSet(t *testing.T) {
 		{
 			name: "Invalid db call returns InternalServerError",
 			db: &data.MockSetDB{
-				UpdateSetStub: func(id models.SetID, s *models.Set) error {
+				UpdateSetForUserStub: func(setID models.SetID, userID models.UserID, s *models.Set) error {
 					return fmt.Errorf("Expected error")
 				},
 			},
-			id: "2",
+			setID:  "2",
+			userID: 1,
 			requestBody: *bytes.NewBufferString(` {
 					"movement": "Dumbbell Curl",
 					"volume": 5,
@@ -100,8 +107,9 @@ func TestUpdateSet(t *testing.T) {
 			} `),
 		},
 		{
-			name: "Missing volume returns StatusBadRequest",
-			id:   "1",
+			name:   "Missing volume returns StatusBadRequest",
+			setID:  "1",
+			userID: 1,
 			requestBody: *bytes.NewBufferString(` {
 					"movement": "Barbell Curl",
 					"intensity": 0.5
@@ -112,8 +120,9 @@ func TestUpdateSet(t *testing.T) {
 			} `),
 		},
 		{
-			name: "Zero Volume returns StatusBadRequest",
-			id:   "1",
+			name:   "Zero Volume returns StatusBadRequest",
+			setID:  "1",
+			userID: 1,
 			requestBody: *bytes.NewBufferString(` {
 					"movement": "Barbell Curl",
 					"volume": 0,
@@ -125,8 +134,9 @@ func TestUpdateSet(t *testing.T) {
 			} `),
 		},
 		{
-			name: "Missing intensity returns StatusBadRequest",
-			id:   "1",
+			name:   "Missing intensity returns StatusBadRequest",
+			setID:  "1",
+			userID: 1,
 			requestBody: *bytes.NewBufferString(` {
 					"movement": "Barbell Curl",
 					"volume": 2
@@ -137,8 +147,9 @@ func TestUpdateSet(t *testing.T) {
 			} `),
 		},
 		{
-			name: "Zero intensity returns StatusBadRequest",
-			id:   "1",
+			name:   "Zero intensity returns StatusBadRequest",
+			setID:  "1",
+			userID: 1,
 			requestBody: *bytes.NewBufferString(`{
 				 	"movement": "Press",
 					"volume": 5,
@@ -150,8 +161,9 @@ func TestUpdateSet(t *testing.T) {
 			} `),
 		},
 		{
-			name: "101 intensity returns StatusBadRequest",
-			id:   "1",
+			name:   "101 intensity returns StatusBadRequest",
+			setID:  "1",
+			userID: 1,
 			requestBody: *bytes.NewBufferString(`{
 				 	"movement": "Press",
 					"volume": 5,
@@ -178,8 +190,9 @@ func TestUpdateSet(t *testing.T) {
 		bodyReader := bytes.NewReader(v.requestBody.Bytes())
 
 		// add id to URL params
-		c.AddParam(SetIDFromParamsKey, v.id)
+		c.AddParam(SetIDFromParamsKey, v.setID)
 		c.Request, _ = http.NewRequest("", "", bodyReader)
+		c.Set(users.UserIDFromContextKey, v.userID)
 
 		// execute update with the test context
 		ts.Update(c)
