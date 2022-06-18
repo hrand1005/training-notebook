@@ -3,7 +3,6 @@ package data
 import (
 	"database/sql"
 	"fmt"
-	"os"
 
 	"github.com/hrand1005/training-notebook/models"
 )
@@ -38,28 +37,13 @@ type userDB struct {
 }
 
 // NewUserDB loads the data from the given file and returns a UserDB interface or error
-func NewUserDB(filename string) (UserDB, error) {
-	return newUserDB(filename)
+func NewUserDB(handle *sql.DB) (UserDB, error) {
+	return newUserDB(handle)
 }
 
 // newUserDB returns the underlying userDB and error created from the given filename.
-func newUserDB(filename string) (*userDB, error) {
-	// Create new db file if one doesn't exist
-	_, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		file, err := os.Create(filename)
-		file.Close()
-		if err != nil {
-			return nil, fmt.Errorf("failed to create db %s: %v", filename, err)
-		}
-	}
-
-	db, err := sql.Open("sqlite3", filename)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load %s: %v", filename, err)
-	}
-
-	_, err = db.Exec(createUserTable)
+func newUserDB(db *sql.DB) (*userDB, error) {
+	_, err := db.Exec(createUserTable)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't prepare SQL statement:\n%s\nerr: %v", createUserTable, err)
 	}

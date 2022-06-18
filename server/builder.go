@@ -1,6 +1,8 @@
 package server
 
 import (
+	"database/sql"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -12,13 +14,15 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/hrand1005/training-notebook/api"
 	"github.com/hrand1005/training-notebook/api/sets"
+	"github.com/hrand1005/training-notebook/api/users"
 	"github.com/hrand1005/training-notebook/data"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // NewBuilder returns a builder with sensible server defaults.
 func NewBuilder() *builder {
 	return &builder{
-		db: data.TestSetData,
 		httpServer: http.Server{
 			Addr: "8080",
 		},
@@ -28,7 +32,7 @@ func NewBuilder() *builder {
 // builder contains an interface for building a server.
 // Call it's methods to configure a server, and call 'Construct' to instantiate it.
 type builder struct {
-	db              data.SetDB
+	db              *sql.DB
 	frontendPath    string
 	logFile         string
 	httpServer      http.Server
@@ -37,14 +41,13 @@ type builder struct {
 }
 
 func (b *builder) SetDB(dbPath string) {
-	setDB, err := data.NewSetDB(dbPath)
+	db, err := data.SqliteDB(dbPath)
 	if err != nil {
-		log.Printf("Encountered error building db, err: %v", err)
 		b.err = err
 		return
 	}
 
-	b.db = setDB
+	b.db = db
 }
 
 func (b *builder) RegisterSwaggerDocs(specPath string) {
@@ -98,16 +101,36 @@ func (b *builder) Construct() (Server, error) {
 		}
 	}
 
-	setGroup := router.Group("/sets")
-	// the set resource contains CRUD operations for sets
-	// configure with SetDB, an interface for CRUD operations on set data
-	setResource, err := sets.New(b.db)
+	if b.db == nil {
+		// TODO: initialize test mode db
+		return nil, fmt.Errorf("no db found, test mode not yet implemented")
+	}
+
+	/***** SETS DB AND RESOURCE *****/
+	setDB, err := data.NewSetDB(b.db)
 	if err != nil {
 		return nil, err
 	}
-
-	// registers resource CRUD operation handler funcs on the provided router group
+	setGroup := router.Group("/sets")
+	// the set resource contains CRUD operations for sets
+	// configure with SetDB, an interface for CRUD operations on set data
+	setResource, err := sets.New(setDB)
+	if err != nil {
+		return nil, err
+	}
 	setResource.RegisterHandlers(setGroup)
+
+	/***** USERS DB AND RESOURCE *****/
+	userDB, err := data.NewUserDB(b.db)
+	if err != nil {
+		return nil, err
+	}
+	userGroup := router.Group("/users")
+	userResource, err := users.New(userDB)
+	if err != nil {
+		return nil, err
+	}
+	userResource.RegisterHandlers(userGroup)
 
 	if b.swaggerSpecPath != "" {
 		// set redoc options for swagger spec and create handler

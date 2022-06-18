@@ -11,6 +11,12 @@ import (
 
 var ErrInvalidUserID = "Invalid user ID"
 
+// Keys used to retrieve values from gin.Context
+const (
+	UserIDFromContextKey = "loggedInUserID"
+	UserIDFromParamsKey  = "paramUserID"
+)
+
 type user struct {
 	db data.UserDB
 }
@@ -20,14 +26,36 @@ func New(db data.UserDB) (*user, error) {
 }
 
 func (u *user) RegisterHandlers(g *gin.RouterGroup) {
-	g.GET("/", u.ReadAll)
-	g.GET("/:id", u.Read)
-	g.POST("/", u.Create)
-	g.PUT("/:id", u.Update)
+	// TODO: REQUIRE ADMIN PERMS
+	//g.GET("/", u.ReadAll)
+	//g.POST("/", u.Create)
+
+	// Authorization NOT required
+	g.POST("/signup", u.Signup)
+	g.POST("/login", u.Login)
+
+	// Require User Authentication for Read/Updates on a user
+	authGroup := g.Group("")
+	authGroup.Use(RequireAuthorization())
+	authGroup.GET("/:"+UserIDFromParamsKey, u.Read)
+	authGroup.PUT("/:"+UserIDFromParamsKey, u.Update)
 }
 
-func userIDFromParams(c *gin.Context) (models.UserID, error) {
-	id, err := strconv.Atoi(c.Param("id"))
+func UserIDFromContext(c *gin.Context) (models.UserID, error) {
+	val, exists := c.Get(UserIDFromContextKey)
+	id, ok := val.(models.UserID)
+	if !exists || !ok {
+		return data.InvalidUserID, fmt.Errorf("couldn't get UserID from context")
+	}
+	if id < 0 {
+		return data.InvalidUserID, fmt.Errorf("user id cannot be negative")
+	}
+
+	return id, nil
+}
+
+func UserIDFromParams(c *gin.Context) (models.UserID, error) {
+	id, err := strconv.Atoi(c.Param(UserIDFromParamsKey))
 	if err != nil {
 		return data.InvalidUserID, err
 	}

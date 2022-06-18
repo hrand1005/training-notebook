@@ -18,7 +18,7 @@ import (
 // Delete is the handler for delete requests on the user resource. An id must be
 // specified.
 func (u *user) Delete(c *gin.Context) {
-	userID, err := userIDFromParams(c)
+	userID, err := UserIDFromParams(c)
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": ErrInvalidUserID})
 		return

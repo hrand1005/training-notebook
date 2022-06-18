@@ -308,7 +308,9 @@ func checkUserInDB(ud *userDB, id models.UserID, u *models.User) (bool, string) 
 const testUserDB = "testUserDB.sqlite"
 
 func setupTestUserDB() *userDB {
-	ud, err := newUserDB(testUserDB)
+	db, err := SqliteDB(testUserDB)
+
+	ud, err := newUserDB(db)
 	if err != nil {
 		msg := fmt.Sprintf("failed to setup test db: %v, err: %v", testUserDB, err)
 		panic(msg)

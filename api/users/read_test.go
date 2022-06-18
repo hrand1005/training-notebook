@@ -90,7 +90,7 @@ func TestReadSingleUser(t *testing.T) {
 		gin.SetMode(gin.TestMode)
 		w := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(w)
-		c.AddParam("id", v.id)
+		c.AddParam(UserIDFromParamsKey, v.id)
 
 		// execute Read on test context
 		ts.Read(c)

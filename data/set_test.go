@@ -18,6 +18,7 @@ func TestAddSet(t *testing.T) {
 		{
 			name: "Nominal case adds set to db",
 			set: &models.Set{
+				UID:       1,
 				Movement:  "Squat",
 				Volume:    5,
 				Intensity: 80,
@@ -27,6 +28,7 @@ func TestAddSet(t *testing.T) {
 			name: "Invalid ID not used in add to db",
 			set: &models.Set{
 				ID:        InvalidSetID,
+				UID:       2,
 				Movement:  "Press",
 				Volume:    6,
 				Intensity: 75,
@@ -45,7 +47,8 @@ func TestAddSet(t *testing.T) {
 			t.Fatalf("Invalid set id: %v", id)
 		}
 
-		setExists, msg := checkSetInDB(sd, id, v.set)
+		v.set.ID = id
+		setExists, msg := checkSetInDB(sd, v.set)
 		if !setExists {
 			t.Fatalf("Failed db check: %v", msg)
 		}
@@ -137,8 +140,9 @@ func TestUpdateSet(t *testing.T) {
 			t.Fatalf("Got error: %v\nWanted error: %v\n", gotErr, v.wantErr)
 		}
 
+		v.updateSet.ID = id
 		// check that the result of the update is equal to wantSetExists
-		setExists, _ := checkSetInDB(sd, id, v.updateSet)
+		setExists, _ := checkSetInDB(sd, v.updateSet)
 		if setExists != v.wantSetExists {
 			setMsg := fmt.Sprintf("Set ID: %v\nSet: %+v", id, v.updateSet)
 			t.Fatalf("Got that setExists is %v but wanted setExists to be %v\n%v", setExists, v.wantSetExists, setMsg)
@@ -298,7 +302,7 @@ func TestDeleteSet(t *testing.T) {
 		}
 
 		// check that the set is no longer in the database (same for error case)
-		setExists, _ := checkSetInDB(sd, id, v.deleteSet)
+		setExists, _ := checkSetInDB(sd, v.deleteSet)
 		if setExists {
 			t.Fatalf("Found unexpected set:\nmodels.SetID: %v\nSet: %+v", id, v.deleteSet)
 		}
@@ -310,7 +314,13 @@ func TestDeleteSet(t *testing.T) {
 const testSetDB = "testSetDB.sqlite"
 
 func setupTestSetDB() *setDB {
-	sd, err := newSetDB(testSetDB)
+	db, err := SqliteDB(testSetDB)
+	if err != nil {
+		msg := fmt.Sprintf("failed to setup test db: %v, err: %v", testSetDB, err)
+		panic(msg)
+	}
+
+	sd, err := newSetDB(db)
 	if err != nil {
 		msg := fmt.Sprintf("failed to setup test db: %v, err: %v", testSetDB, err)
 		panic(msg)
@@ -328,23 +338,26 @@ func teardownTestSetDB(sd *setDB) {
 // provided database. If an error occurs, or the set is not found to exist, returns false
 // and a description of the error. If a set is found and all checks pass, returns true and
 // an empty string.
-func checkSetInDB(sd *setDB, id models.SetID, s *models.Set) (bool, string) {
+func checkSetInDB(sd *setDB, s *models.Set) (bool, string) {
+	var userID int
 	var movement string
 	var volume float64
 	var intensity float64
-	err := sd.handle.QueryRow(selectSetByID, id).Scan(&movement, &volume, &intensity)
+	err := sd.handle.QueryRow(selectSetByID, s.ID).Scan(&userID, &movement, &volume, &intensity)
 	if err != nil {
 		return false, fmt.Sprintf("error querying for set: %v", err)
 	}
 
-	if s.Movement != movement {
-		return false, fmt.Sprintf("expected movement %q but got %q", s.Movement, movement)
+	gotSet := &models.Set{
+		ID:        s.ID,
+		UID:       models.UserID(userID),
+		Movement:  movement,
+		Volume:    volume,
+		Intensity: intensity,
 	}
-	if s.Volume != volume {
-		return false, fmt.Sprintf("expected volume %v but got %v", s.Volume, volume)
-	}
-	if s.Intensity != intensity {
-		return false, fmt.Sprintf("expected intensity %v but got %v", s.Intensity, intensity)
+
+	if !models.SetsEqual(s, gotSet) {
+		return false, fmt.Sprintf("not equal,want set:\n%+v\ngot set:\n%+v", s, gotSet)
 	}
 
 	return true, ""
