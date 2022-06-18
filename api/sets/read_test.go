@@ -23,15 +23,17 @@ func TestReadSingleSet(t *testing.T) {
 		name     string
 		db       *data.MockSetDB
 		id       string
+		userID   models.UserID
 		wantCode int
 		wantResp bytes.Buffer
 	}{
 		{
 			name: "Set found with valid db call returns StatusOK",
 			db: &data.MockSetDB{
-				SetByIDStub: func(s models.SetID) (*models.Set, error) {
+				SetByIDForUserStub: func(setID models.SetID, userID models.UserID) (*models.Set, error) {
 					return &models.Set{
 						ID:        1,
+						UID:       1,
 						Movement:  "Squat",
 						Volume:    5,
 						Intensity: 80,
@@ -39,10 +41,12 @@ func TestReadSingleSet(t *testing.T) {
 				},
 			},
 			id:       "1",
+			userID:   1,
 			wantCode: http.StatusOK,
 			wantResp: *bytes.NewBufferString(`
 				{
 					"set-id": 1,
+					"user-id": 1,
 					"movement": "Squat",
 					"volume": 5,
 					"intensity": 80
@@ -52,24 +56,26 @@ func TestReadSingleSet(t *testing.T) {
 		{
 			name: "Set not found returns StatusNotFound",
 			db: &data.MockSetDB{
-				SetByIDStub: func(s models.SetID) (*models.Set, error) {
+				SetByIDForUserStub: func(setID models.SetID, userID models.UserID) (*models.Set, error) {
 					return nil, data.ErrNotFound
 				},
 			},
 			id:       "4",
+			userID:   1,
 			wantCode: http.StatusNotFound,
 			wantResp: *bytes.NewBufferString(`{
-				"message": "no such set with id 4"
+				"message": "no such set with id 4 for logged in user"
 			}`),
 		},
 		{
 			name: "Invalid db query returns InternalServerError",
 			db: &data.MockSetDB{
-				SetByIDStub: func(s models.SetID) (*models.Set, error) {
+				SetByIDForUserStub: func(setID models.SetID, userID models.UserID) (*models.Set, error) {
 					return nil, fmt.Errorf("Expected error")
 				},
 			},
 			id:       "4",
+			userID:   1,
 			wantCode: http.StatusInternalServerError,
 			wantResp: *bytes.NewBufferString(`{
 				"message": "Expected error"
@@ -96,6 +102,9 @@ func TestReadSingleSet(t *testing.T) {
 		w := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(w)
 		c.AddParam(SetIDFromParamsKey, v.id)
+
+		// set userID in context
+		c.Set(users.UserIDFromContextKey, v.userID)
 
 		// execute Read on test context
 		ts.Read(c)

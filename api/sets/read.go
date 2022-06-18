@@ -49,16 +49,22 @@ func (s *set) ReadAll(c *gin.Context) {
 // Read is the handler for read requests on the set resource where an id is
 // specified.
 func (s *set) Read(c *gin.Context) {
+	userID, err := users.UserIDFromContext(c)
+	if err != nil {
+		c.IndentedJSON(http.StatusUnauthorized, gin.H{"message": "you must be logged in to perform this action"})
+		return
+	}
+
 	setID, err := SetIDFromParams(c)
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": ErrInvalidSetID})
 		return
 	}
 
-	r, err := s.db.SetByID(setID)
+	resultSet, err := s.db.SetByIDForUser(setID, userID)
 	if err != nil {
 		if err == data.ErrNotFound {
-			msg := fmt.Sprintf("no such set with id %v", setID)
+			msg := fmt.Sprintf("no such set with id %v for logged in user", setID)
 			c.IndentedJSON(http.StatusNotFound, gin.H{"message": msg})
 			return
 		}
@@ -66,5 +72,5 @@ func (s *set) Read(c *gin.Context) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, r)
+	c.IndentedJSON(http.StatusOK, resultSet)
 }

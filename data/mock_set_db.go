@@ -4,13 +4,14 @@ import "github.com/hrand1005/training-notebook/models"
 
 // MockSetDB is my crack at manually implementing a Mock interface for testing
 type MockSetDB struct {
-	AddSetStub       func(s *models.Set) (models.SetID, error)
-	SetsStub         func() ([]*models.Set, error)
-	SetByIDStub      func(id models.SetID) (*models.Set, error)
-	SetsByUserIDStub func(models.UserID) ([]*models.Set, error)
-	UpdateSetStub    func(id models.SetID, s *models.Set) error
-	DeleteSetStub    func(id models.SetID) error
-	CloseStub        func() error
+	AddSetStub         func(s *models.Set) (models.SetID, error)
+	SetsStub           func() ([]*models.Set, error)
+	SetsByUserIDStub   func(models.UserID) ([]*models.Set, error)
+	SetByIDStub        func(id models.SetID) (*models.Set, error)
+	SetByIDForUserStub func(models.SetID, models.UserID) (*models.Set, error)
+	UpdateSetStub      func(id models.SetID, s *models.Set) error
+	DeleteSetStub      func(id models.SetID) error
+	CloseStub          func() error
 }
 
 func (m *MockSetDB) AddSet(s *models.Set) (models.SetID, error) {
@@ -21,12 +22,16 @@ func (m *MockSetDB) Sets() ([]*models.Set, error) {
 	return m.SetsStub()
 }
 
+func (m *MockSetDB) SetsByUserID(id models.UserID) ([]*models.Set, error) {
+	return m.SetsByUserIDStub(id)
+}
+
 func (m *MockSetDB) SetByID(id models.SetID) (*models.Set, error) {
 	return m.SetByIDStub(id)
 }
 
-func (m *MockSetDB) SetsByUserID(id models.UserID) ([]*models.Set, error) {
-	return m.SetsByUserIDStub(id)
+func (m *MockSetDB) SetByIDForUser(setID models.SetID, userID models.UserID) (*models.Set, error) {
+	return m.SetByIDForUserStub(setID, userID)
 }
 
 func (m *MockSetDB) UpdateSet(id models.SetID, s *models.Set) error {
