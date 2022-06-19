@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Kills child background processes, eg the test server upon exiting
-trap "kill 0" EXIT
-
 # go project root
 readonly TRAINING_NOTEBOOK="github.com/hrand1005/training-notebook/"
 
@@ -33,19 +30,30 @@ while getopts ':aip:h' opt; do
     a)
       echo "Running all unit tests..."
       go test -v $(go list $TRAINING_NOTEBOOK... | grep -v /test)
-      exit 0
+      if [ $? -eq 0 ]; then
+        exit 0
+      fi
+      exit $?
       ;;
     p) 
       echo "Running tests in package '${OPTARG}'"
       go test -v -timeout 30s $TRAINING_NOTEBOOK/$OPTARG
-      exit 0
+      if [ $? -eq 0 ]; then
+        exit 0
+      fi
+      exit $?
       ;;
     i)
       echo "Running integration tests..."
       $START_TEST_SERVER&
       wait_for_test_server
       go test -v $TRAINING_NOTEBOOK/test
-      exit 0
+      if [ $? -eq 0 ]; then
+        pkill -P $$
+        exit 0
+      fi
+      pkill -P $$
+      exit $?
       ;;
     h)
       echo $USAGE
