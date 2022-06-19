@@ -22,7 +22,7 @@ jobs:
       run: go build -v ./...
 
     - name: Unit Test
-      run: sh scripts/test.sh -a
+      run: ./scripts/test.sh -a
 
     - name: Integration Test
-      run: sh scripts/test.sh -i
+      run: ./scripts/test.sh -i
