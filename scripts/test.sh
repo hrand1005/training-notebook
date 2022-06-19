@@ -28,7 +28,7 @@ wait_for_test_server() {
   done
 }
 
-while getopts ':a:ip:h' opt; do
+while getopts ':aip:h' opt; do
   case "$opt" in
     a)
       echo "Running all unit tests..."
@@ -42,7 +42,6 @@ while getopts ':a:ip:h' opt; do
       ;;
     i)
       echo "Running integration tests..."
-      echo "PWD: $PWD"
       $START_TEST_SERVER&
       wait_for_test_server
       go test -v $TRAINING_NOTEBOOK/test
