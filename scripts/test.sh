@@ -52,7 +52,6 @@ while getopts ':aip:h' opt; do
         pkill -P $$
         exit 0
       fi
-      pkill -P $$
       exit $?
       ;;
     h)

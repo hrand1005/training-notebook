@@ -2,10 +2,13 @@ package test
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"testing"
-	"time"
+
+	"github.com/hrand1005/training-notebook/models"
 )
 
 const (
@@ -13,9 +16,6 @@ const (
 )
 
 // These tests clients make requests to the test server, which must be running!
-// From project root:
-//
-// ./scripts/dev.sh configs/test_config.yaml
 
 func TestUserSignupAndLogin(t *testing.T) {
 	// define new HTTP client
@@ -26,21 +26,71 @@ func TestUserSignupAndLogin(t *testing.T) {
     "name": "Herb",
     "password": "cookies"
   }`)
-	req, err := http.NewRequest(http.MethodPost, serverURL+"/users/signup", signupBody)
+	signupReq, err := http.NewRequest(http.MethodPost, serverURL+"/users/signup", signupBody)
 	if err != nil {
-		t.Fatalf("Failed to build HTTP request:\nreq: %+v\nerr: %v", req, err)
+		t.Fatalf("Failed to build signup request:\nreq: %+v\nerr: %v", signupReq, err)
 	}
-
-	time.Sleep(time.Second * 5)
 
 	// send signup post request
-	resp, err := client.Do(req)
+	signupResp, err := client.Do(signupReq)
 	if err != nil {
-		t.Fatalf("Failed to send request:\nreq: %+v\nerr: %v", req, err)
+		t.Fatalf("Failed to send signup request:\nreq: %+v\nerr: %v", signupReq, err)
 	}
-	fmt.Printf("Resp:\n%+v\n", resp)
+	defer signupResp.Body.Close()
+
+	// signup should yield 201 Created
+	if signupResp.StatusCode != http.StatusCreated {
+		t.Fatalf("Expected status 201 Created but got %v", signupResp.StatusCode)
+	}
+
 	// attempt to login with improper credentials
+	invalidLoginBody := bytes.NewBufferString(`{
+		"user-id": -1,
+		"password": "cookies"
+	}`)
+	invalidLoginReq, err := http.NewRequest(http.MethodPost, serverURL+"/users/invalidLogin", invalidLoginBody)
+	if err != nil {
+		t.Fatalf("Failed to build invalidLogin request:\nreq: %+v\nerr: %v", invalidLoginReq, err)
+	}
+
+	// send invalidLogin post request
+	invalidLoginResp, err := client.Do(invalidLoginReq)
+	if err != nil {
+		t.Fatalf("Failed to send invalid login request:\nreq: %+v\nerr: %v", invalidLoginReq, err)
+	}
+	defer invalidLoginResp.Body.Close()
+
+	// invalidLogin should yield 401 Unauthorized
+	if invalidLoginResp.StatusCode != http.StatusNotFound {
+		t.Fatalf("Expected status 404 Unauthorized but got %v", invalidLoginResp.StatusCode)
+	}
+
 	// attempt to login with proper credentials
+	user := &models.User{}
+	if err := DecodeJSON(signupResp.Body, user); err != nil {
+		t.Fatalf("Failed to decode signup response to user:\nerr: %v", err)
+	}
+
+	loginBody := bytes.NewBufferString(fmt.Sprintf(`{
+		"user-id": %v,
+		"password": "cookies"
+	}`, user.ID))
+	loginReq, err := http.NewRequest(http.MethodPost, serverURL+"/users/login", loginBody)
+	if err != nil {
+		t.Fatalf("Failed to build login request:\nreq: %+v\nerr: %v", loginReq, err)
+	}
+
+	// send login post request
+	loginResp, err := client.Do(loginReq)
+	if err != nil {
+		t.Fatalf("Failed to send login request:\nreq: %+v\nerr: %v", loginReq, err)
+	}
+	defer loginResp.Body.Close()
+
+	// login should yield 201 Created
+	if loginResp.StatusCode != http.StatusOK {
+		t.Fatalf("Expected status 200 OK but got %v", loginResp.StatusCode)
+	}
 }
 
 /*
@@ -84,3 +134,9 @@ func TestUserDeleteSet(t *testing.T) {
   // delete set for logged in user
 }
 */
+
+// DecodeJSON decodes the given Reader to the target type
+func DecodeJSON(source io.Reader, target interface{}) error {
+	d := json.NewDecoder(source)
+	return d.Decode(target)
+}
