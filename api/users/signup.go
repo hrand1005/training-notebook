@@ -2,7 +2,6 @@ package users
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -27,7 +26,6 @@ func (u *user) Signup(c *gin.Context) {
 	hashedPassword, err := hashPassword(newUser.Password)
 	if err != nil {
 		// TODO: use configured logger for this server
-		log.Printf("could not hash password: %v", err)
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "invalid password"})
 	}
 	newUser.Password = hashedPassword

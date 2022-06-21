@@ -40,7 +40,7 @@ func (u *user) Login(c *gin.Context) {
 	}
 
 	// TODO: get path and domain from configs or env
-	c.SetCookie(LoginCookieName, token, LoginCookieMaxAge, "", "", LoginCookieSecure, LoginCookieHTTPOnly)
+	c.SetCookie(LoginCookieName, token, LoginCookieMaxAge, "/", "localhost", LoginCookieSecure, LoginCookieHTTPOnly)
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "logged in successfully"})
 }
 

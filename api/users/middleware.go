@@ -18,7 +18,7 @@ func RequireAuthorization( /*l AuthorizationLevel*/ ) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := c.Cookie(LoginCookieName)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "must be logged in to perform this function"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "you must be logged in to perform this action"})
 		}
 
 		userID, err := parseUserIDFromToken(token)
@@ -35,8 +35,8 @@ func RequireAuthorization( /*l AuthorizationLevel*/ ) gin.HandlerFunc {
 }
 
 func parseUserIDFromToken(token string) (models.UserID, error) {
-	var claims Claims
-	parsedToken, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
+	claims := Claims{}
+	parsedToken, err := jwt.ParseWithClaims(token, &claims, func(t *jwt.Token) (interface{}, error) {
 		// TODO: get this from configs
 		return []byte(os.Getenv("SIGNING_KEY")), nil
 	})
