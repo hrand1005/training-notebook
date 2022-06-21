@@ -19,7 +19,7 @@ import (
 func (s *set) Create(c *gin.Context) {
 	userID, err := users.UserIDFromContext(c)
 	if err != nil {
-		c.IndentedJSON(http.StatusUnauthorized, gin.H{"message": "SET CREATE: must be logged in with valid user to perform this function"})
+		c.IndentedJSON(http.StatusUnauthorized, gin.H{"message": "you must be logged in with valid user to perform this action"})
 	}
 
 	var newSet models.Set
