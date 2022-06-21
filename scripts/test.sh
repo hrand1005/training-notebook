@@ -8,7 +8,8 @@ readonly USAGE="Usage: $(basename $0) [-a] [-i] [-p package]"
 
 # test server startup utilities
 readonly TEST_CONFIG_PATH="configs/test_config.yaml"
-readonly START_TEST_SERVER="sh scripts/dev.sh $TEST_CONFIG_PATH"
+readonly BUILD_TEST_SERVER="go build"
+readonly START_TEST_SERVER="./training-notebook --config=$TEST_CONFIG_PATH"
 readonly TEST_SERVER_HOST="localhost"
 readonly TEST_SERVER_ADDR=8080
 readonly MAX_RETRIES=10
@@ -45,13 +46,16 @@ while getopts ':aip:h' opt; do
       ;;
     i)
       echo "Running integration tests..."
+      $BUILD_TEST_SERVER
       $START_TEST_SERVER&
+      TEST_SERVER_PID=$!
       wait_for_test_server
       go test -v $TRAINING_NOTEBOOK/test
       if [ $? -eq 0 ]; then
-        pkill -P $$
+        kill $TEST_SERVER_PID
         exit 0
       fi
+      kill $TEST_SERVER_PID
       exit $?
       ;;
     h)
