@@ -39,10 +39,10 @@ func (s *set) RegisterHandlers(g *gin.RouterGroup) {
 
 	g.Use(users.RequireAuthorization())
 	g.GET("/", s.ReadAll)
-	g.GET("/:setID", s.Read)
-	g.DELETE("/:setID", s.Delete)
+	g.GET("/:"+SetIDFromParamsKey, s.Read)
+	g.DELETE("/:"+SetIDFromParamsKey, s.Delete)
 	g.POST("/", s.Create)
-	g.PUT("/:setID", s.Update)
+	g.PUT("/:"+SetIDFromParamsKey, s.Update)
 }
 
 /*

@@ -162,18 +162,50 @@ func TestUserPostSet(t *testing.T) {
 
 	// bodyBytes, _ := io.ReadAll(setResp.Body)
 	// fmt.Printf("Response body: %v", string(bodyBytes))
+	// TODO
 	// -- verify that any defined user-id is overwritten with the logged in user's id
 }
 
-/*
 func TestUserReadSet(t *testing.T) {
-  // define new HTTP client
-  // attempt to read existing set by id without credentials
-  // login with existing user
-  // attempt to read set for different user
-  // read set for logged in user
+	// define HTTP clients to test valid and invalid cases
+	clientValid := newHTTPClientWithCookieJar()
+	clientInvalid := newHTTPClientWithCookieJar()
+
+	// logs in and creates set with given client, returns setID
+	setID := CreateUserAndPostTestSet(clientValid)
+
+	// attempt to read existing set by id without credentials
+	endpoint := fmt.Sprintf("%s/sets/%v", serverURL, setID)
+	setReq, err := http.NewRequest(http.MethodGet, endpoint, nil)
+	if err != nil {
+		t.Fatalf("Failed to build set read request:\nreq: %+v\nerr: %v", setReq, err)
+	}
+	invalidResp, err := clientInvalid.Do(setReq)
+	if err != nil {
+		t.Fatalf("Failed to send read request:\nreq: %+v\nerr: %v", setReq, err)
+	}
+	defer invalidResp.Body.Close()
+
+	if invalidResp.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("Expected response with status code 401 Unauthorized but got %v", invalidResp.StatusCode)
+	}
+
+	validResp, err := clientValid.Do(setReq)
+	if err != nil {
+		t.Fatalf("Failed to send read request:\nreq: %+v\nerr: %v", setReq, err)
+	}
+	defer validResp.Body.Close()
+
+	if validResp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(validResp.Body)
+		t.Fatalf("Expected response with status 200 OK but got %v\nBody: %s", validResp.StatusCode, bodyBytes)
+	}
+	// login with existing user
+	// attempt to read set for different user
+	// read set for logged in user
 }
 
+/*
 func TestUserReadSets(t *testing.T) {
   // define new HTTP client
   // attempt to read sets without credentials
@@ -205,7 +237,7 @@ func TestUserDeleteSet(t *testing.T) {
 // that the login succeeds upon return. This function returns the user-id of the logged
 // in user.
 func LoginWithValidUser(c *http.Client) models.UserID {
-	testUserName, testUserPassword := "TestUserName", "TestPassword"
+	const testUserName, testUserPassword = "TestUserName", "TestPassword"
 	sBody := bytes.NewBufferString(fmt.Sprintf(`{
     "name": "%s",
     "password": "%s"
@@ -252,6 +284,40 @@ func LoginWithValidUser(c *http.Client) models.UserID {
 	}
 
 	return user.ID
+}
+
+func CreateUserAndPostTestSet(c *http.Client) models.SetID {
+	LoginWithValidUser(c)
+
+	testSetRequest := bytes.NewBufferString(`{
+		"movement": "testMovement",
+		"volume": 12,
+		"intensity": 65
+	}`)
+
+	setReq, err := http.NewRequest(http.MethodPost, serverURL+"/sets/", testSetRequest)
+	if err != nil {
+		panic("CreateUserAndPostTestSet: " + err.Error())
+	}
+
+	setResp, err := c.Do(setReq)
+	if err != nil {
+		panic("CreateUserAndPostTestSet: Failed to post setRequest: " + err.Error())
+	}
+	defer setResp.Body.Close()
+
+	if setResp.StatusCode != http.StatusCreated {
+		bodyBytes, _ := io.ReadAll(setResp.Body)
+		panic(fmt.Sprintf("CreateUserAndPostTestSet: Expected 201 status created but got %v\nBody: %s", setResp.StatusCode, bodyBytes))
+	}
+
+	set := &models.Set{}
+	err = DecodeJSON(setResp.Body, set)
+	if err != nil {
+		panic("CreateUserAndPostTestSet: " + err.Error())
+	}
+
+	return set.ID
 }
 
 // DecodeJSON decodes the given Reader to the target type
