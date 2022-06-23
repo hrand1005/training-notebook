@@ -205,15 +205,66 @@ func TestUserReadSet(t *testing.T) {
 	// read set for logged in user
 }
 
-/*
 func TestUserReadSets(t *testing.T) {
-  // define new HTTP client
-  // attempt to read sets without credentials
-  // login with existing user
-  // read sets for logged in user
-  // verify that each set belongs to the logged in user
+	// define HTTP clients to test valid and invalid cases
+	clientValid := newHTTPClientWithCookieJar()
+	clientInvalid := newHTTPClientWithCookieJar()
+
+	// logs in and creates set with given client, returns setID
+	firstSetID := CreateUserAndPostTestSet(clientValid)
+	secondSetID := CreateUserAndPostTestSet(clientValid)
+
+	// attempt to read sets without any credentials
+	setReq, err := http.NewRequest(http.MethodGet, serverURL+"/sets/", nil)
+	if err != nil {
+		t.Fatalf("Failed to build set read request:\nreq: %+v\nerr: %v", setReq, err)
+	}
+	invalidResp, err := clientInvalid.Do(setReq)
+	if err != nil {
+		t.Fatalf("Failed to send read request:\nreq: %+v\nerr: %v", setReq, err)
+	}
+	defer invalidResp.Body.Close()
+
+	if invalidResp.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("Expected response with status code 401 Unauthorized but got %v", invalidResp.StatusCode)
+	}
+
+	validResp, err := clientValid.Do(setReq)
+	if err != nil {
+		t.Fatalf("Failed to send read request:\nreq: %+v\nerr: %v", setReq, err)
+	}
+	defer validResp.Body.Close()
+
+	if validResp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(validResp.Body)
+		t.Fatalf("Expected response with status 200 OK but got %v\nBody: %s", validResp.StatusCode, bodyBytes)
+	}
+
+	sets := []*models.Set{}
+	err = DecodeJSON(validResp.Body, &sets)
+	if err != nil {
+		t.Fatalf("Failed to read response into sets: %v", err)
+	}
+
+	// verify that each setID is found
+	for _, v := range sets {
+		if v.ID != firstSetID && v.ID != secondSetID {
+			t.Fatalf("Expected sets response to contain posted set ids:\nExpected to find %v and %v\nSets: %+v", firstSetID, secondSetID, sets)
+		}
+	}
+
+	// login with existing user
+	// attempt to read set for different user
+	// read set for logged in user
+	// define new HTTP client
+	// attempt to read sets without credentials
+	// login with existing user
+	// read sets for logged in user
+	// verify that each set belongs to the logged in user
+
 }
 
+/*
 func TestUserUpdateSet(t *testing.T) {
   // define new HTTP client
   // attempt to update existing set without credentials

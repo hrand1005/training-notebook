@@ -136,11 +136,10 @@ func (sd *setDB) SetsByUserID(userID models.UserID) ([]*models.Set, error) {
 	sets := make([]*models.Set, 0, 10)
 	for rows.Next() {
 		var id models.SetID
-		var userID models.UserID
 		var movement string
 		var volume float64
 		var intensity float64
-		if err := rows.Scan(&id, &userID, &movement, &volume, &intensity); err != nil {
+		if err := rows.Scan(&id, &movement, &volume, &intensity); err != nil {
 			return nil, fmt.Errorf("encountered error scanning row: %v", err)
 		}
 
