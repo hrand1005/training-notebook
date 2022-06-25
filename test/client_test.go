@@ -312,27 +312,78 @@ func TestUserReadSets(t *testing.T) {
 	if len(invalidSets) != 0 {
 		t.Fatalf("Expected invalid case to retrieve no sets but got set response:\n%+v", invalidSets)
 	}
-	// login with existing user
-	// attempt to read set for different user
-	// read set for logged in user
-	// define new HTTP client
-	// attempt to read sets without credentials
-	// login with existing user
-	// read sets for logged in user
-	// verify that each set belongs to the logged in user
+}
 
+func TestUserUpdateSet(t *testing.T) {
+	client := newHTTPClientWithCookieJar()
+
+	// login with user and create a set
+	userID := CreateUserAndLogin(client, testUser)
+	setID := CreateAndPostSet(client, testSet)
+
+	// define new set fields to update the existing set
+	updateSet := &models.Set{
+		ID:        setID,
+		UID:       userID,
+		Movement:  "Update Movement",
+		Volume:    1,
+		Intensity: 1,
+	}
+	setBody := bytes.NewBufferString(fmt.Sprintf(`{
+  	"movement": "%s",
+  	"volume": %v,
+  	"intensity": %v
+  }`, updateSet.Movement, updateSet.Volume, updateSet.Intensity))
+
+	// update the set with new fields for the logged in user
+	endpoint := fmt.Sprintf("%s/sets/%v", serverURL, setID)
+	setReq, err := http.NewRequest(http.MethodPut, endpoint, setBody)
+	if err != nil {
+		t.Fatalf("Failed to build set request, err: %v", err)
+	}
+	setResp, err := client.Do(setReq)
+	if err != nil {
+		t.Fatalf("Failed to send set update request, err: %v", err)
+	}
+
+	if setResp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(setResp.Body)
+		t.Fatalf("Expected 200 Status OK but got %v\nSet Resp: %s", setResp.StatusCode, bodyBytes)
+	}
+
+	gotSet := &models.Set{}
+	DecodeJSON(setResp.Body, gotSet)
+
+	if gotSet.UID != userID || gotSet.Movement != updateSet.Movement || gotSet.Volume != updateSet.Volume || gotSet.Intensity != updateSet.Intensity {
+		t.Fatalf("Fields not updated as expected:\nGot Set: %+v\nExpected set: %+v", gotSet, updateSet)
+	}
+
+	// attempt to update set for different user
+	clientInvalid := newHTTPClientWithCookieJar()
+	CreateUserAndLogin(clientInvalid, testUser)
+	invalidBody := bytes.NewBufferString(fmt.Sprintf(`{
+  	"movement": "%s",
+  	"volume": %v,
+  	"intensity": %v
+  }`, updateSet.Movement, updateSet.Volume, updateSet.Intensity))
+	invalidReq, err := http.NewRequest(http.MethodPut, endpoint, invalidBody)
+	if err != nil {
+		t.Fatalf("Failed to build set request, err: %v", err)
+	}
+	invalidResp, err := clientInvalid.Do(invalidReq)
+	if err != nil {
+		t.Fatalf("Failed to send set update request, err: %v", err)
+	}
+
+	if invalidResp.StatusCode != http.StatusNotFound {
+		bodyBytes, _ := io.ReadAll(invalidResp.Body)
+		t.Fatalf("Expected 404 Not Found for invalid user but got %v\nResp: %s", invalidResp.StatusCode, bodyBytes)
+	}
+	// TODO:
+	// attempt to update invalid fields
 }
 
 /*
-func TestUserUpdateSet(t *testing.T) {
-  // define new HTTP client
-  // attempt to update existing set without credentials
-  // login with existing user
-  // attempt to update set for different user
-  // attempt to update invalid fields
-  // update one of the user's sets
-}
-
 func TestUserDeleteSet(t *testing.T) {
   // define new HTTP client
   // attempt to delete a set without credentials

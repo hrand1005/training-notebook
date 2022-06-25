@@ -72,6 +72,9 @@ func BindingErrorToMessage(err error) string {
 			msg += fmt.Sprintf("'%s' field %v.", v.Field(), fieldErrorToMessage(v))
 		}
 	}
+	if msg == "" {
+		msg = "Malformed JSON"
+	}
 	return msg
 }
 
