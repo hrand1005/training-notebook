@@ -383,17 +383,58 @@ func TestUserUpdateSet(t *testing.T) {
 	// attempt to update invalid fields
 }
 
-/*
 func TestUserDeleteSet(t *testing.T) {
-  // define new HTTP client
-  // attempt to delete a set without credentials
-  // login with existing user
-  // attempt to delete set for different user
-  // delete set for logged in user
-}
-*/
+	// define HTTP clients to test valid and invalid cases
+	clientValid := newHTTPClientWithCookieJar()
 
-// TODO: Refactor just to create a function for creating the provided user, and logging in
+	// logs in and creates set with given client
+	CreateUserAndLogin(clientValid, testUser)
+	// posts the test set using the logged in client
+	setID := CreateAndPostSet(clientValid, testSet)
+
+	// attempt to read existing set by id without credentials with invalid client
+	endpoint := fmt.Sprintf("%s/sets/%v", serverURL, setID)
+	setReq, err := http.NewRequest(http.MethodDelete, endpoint, nil)
+	if err != nil {
+		t.Fatalf("Failed to build set read request:\nreq: %+v\nerr: %v", setReq, err)
+	}
+	clientInvalid := newHTTPClientWithCookieJar()
+	invalidResp, err := clientInvalid.Do(setReq)
+	if err != nil {
+		t.Fatalf("Failed to send read request:\nreq: %+v\nerr: %v", setReq, err)
+	}
+	defer invalidResp.Body.Close()
+
+	if invalidResp.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("Expected response with status code 401 Unauthorized but got %v", invalidResp.StatusCode)
+	}
+
+	validResp, err := clientValid.Do(setReq)
+	if err != nil {
+		t.Fatalf("Failed to send read request:\nreq: %+v\nerr: %v", setReq, err)
+	}
+	defer validResp.Body.Close()
+
+	if validResp.StatusCode != http.StatusNoContent {
+		bodyBytes, _ := io.ReadAll(validResp.Body)
+		t.Fatalf("Expected response with status 204 NoContent but got %v\nBody: %s", validResp.StatusCode, bodyBytes)
+	}
+
+	// attempting to delete the set again should result in 404
+	validResp, err = clientValid.Do(setReq)
+	if err != nil {
+		t.Fatalf("Failed to send read request:\nreq: %+v\nerr: %v", setReq, err)
+	}
+	defer validResp.Body.Close()
+
+	if validResp.StatusCode != http.StatusNotFound {
+		bodyBytes, _ := io.ReadAll(validResp.Body)
+		t.Fatalf("Expected response with status 404 Not Found but got %v\nBody: %s", validResp.StatusCode, bodyBytes)
+	}
+}
+
+// CreateUserAndLogin is a testing utility which creates the logged in user on the given client, returning the
+// UserID of the created user, and logging in (thus setting jwt cookie enabling authenticated operations)
 func CreateUserAndLogin(c *http.Client, u *models.User) models.UserID {
 	sBody := bytes.NewBufferString(fmt.Sprintf(`{
 		"name": "%s",
