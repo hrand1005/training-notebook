@@ -43,7 +43,7 @@ type setsResponse struct {
 // returns generic error message as string
 // swagger:response errorResponse
 type errorResponse struct {
-	// Description of the erro
+	// Description of the error
 	// in: body
 	Body gin.H
 }
@@ -55,5 +55,5 @@ type setIDParameter struct {
 	// The id of the set
 	// in: required: true
 	// required: true
-	ID int `json:"id"`
+	ID int `json:"set-id"`
 }

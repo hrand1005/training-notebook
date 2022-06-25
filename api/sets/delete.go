@@ -13,6 +13,7 @@ import (
 // Delete a set.
 // responses:
 //  204: noContent
+// 	401: errorResponse
 //  404: errorResponse
 //  500: errorResponse
 

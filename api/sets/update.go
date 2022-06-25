@@ -15,6 +15,7 @@ import (
 // responses:
 //  200: setResponse
 //  400: errorResponse
+// 	401: errorResponse
 //  404: errorResponse
 //  500: errorResponse
 

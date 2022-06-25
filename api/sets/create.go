@@ -13,6 +13,7 @@ import (
 // responses:
 //  201: setResponse
 //  400: errorResponse
+// 	401: errorResponse
 //  500: errorResponse
 
 // Create is the handler for create requests on the set resource.

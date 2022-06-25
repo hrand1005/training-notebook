@@ -14,6 +14,7 @@ import (
 // Read all sets.
 // responses:
 //  200: setsResponse
+// 	401: errorResponse
 //  500: errorResponse
 
 // ReadAll is the handler for read requests on the set resource where no id is
@@ -43,6 +44,7 @@ func (s *set) ReadAll(c *gin.Context) {
 // responses:
 //  200: setResponse
 //  400: errorResponse
+// 	401: errorResponse
 //  404: errorResponse
 //  500: errorResponse
 
