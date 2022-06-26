@@ -20,7 +20,7 @@ const (
 )
 
 // swagger:route POST /users/login users login
-// Signs up a new user with the given information
+// Login as user.
 // responses:
 //  201: userResponse
 //  400: errorResponse

@@ -9,8 +9,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// swagger:route POST /users/signup users signup
-// Signs up a new user with the given information
+// swagger:route POST /users/signup users
+// Signup a new user.
 // responses:
 //  201: userResponse
 //  400: errorResponse

@@ -36,6 +36,19 @@ definitions:
     format: int64
     type: integer
     x-go-package: github.com/hrand1005/training-notebook/models
+  User:
+    description: User defines the model of the user resource
+    properties:
+      name:
+        type: string
+        x-go-name: Name
+      password:
+        type: string
+        x-go-name: Password
+      user-id:
+        $ref: '#/definitions/UserID'
+    type: object
+    x-go-package: github.com/hrand1005/training-notebook/models
   UserID:
     description: UserID is the unique identifier for a user of the application
     format: int64
@@ -161,7 +174,6 @@ paths:
       - users
   /users/login:
     post:
-      description: Signs up a new user with the given information
       operationId: login
       responses:
         "201":
@@ -174,12 +186,12 @@ paths:
           $ref: '#/responses/errorResponse'
         "500":
           $ref: '#/responses/errorResponse'
+      summary: Login as user.
       tags:
       - users
   /users/signup:
     post:
-      description: Signs up a new user with the given information
-      operationId: signup
+      operationId: users
       responses:
         "201":
           $ref: '#/responses/userResponse'
@@ -187,8 +199,7 @@ paths:
           $ref: '#/responses/errorResponse'
         "500":
           $ref: '#/responses/errorResponse'
-      tags:
-      - users
+      summary: Signup a new user.
 produces:
 - application/json
 responses:
@@ -205,6 +216,16 @@ responses:
     schema:
       items:
         $ref: '#/definitions/Set'
+      type: array
+  userResponse:
+    description: returns a user in the response
+    schema:
+      $ref: '#/definitions/User'
+  usersResponse:
+    description: returns users in the response
+    schema:
+      items:
+        $ref: '#/definitions/User'
       type: array
 schemes:
 - http

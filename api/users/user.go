@@ -17,10 +17,6 @@ const (
 	UserIDFromParamsKey  = "paramUserID"
 )
 
-type user struct {
-	db data.UserDB
-}
-
 func New(db data.UserDB) (*user, error) {
 	return &user{db: db}, nil
 }
