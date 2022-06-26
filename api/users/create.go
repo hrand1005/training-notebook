@@ -7,7 +7,10 @@ import (
 	"github.com/hrand1005/training-notebook/models"
 )
 
-// swagger:route POST /users users createUser
+// NOTE: The following method is used for debugging, and should not be reachable
+// 	to normal users during production
+
+// <SWAGGER-IGNORE>:route POST /users users createUser
 // Creates a user.
 // responses:
 //  201: userResponse

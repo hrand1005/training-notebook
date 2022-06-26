@@ -9,6 +9,15 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// swagger:route POST /users/signup users signup
+// Signs up a new user with the given information
+// responses:
+//  201: userResponse
+//  400: errorResponse
+//  500: errorResponse
+
+// Signup is the handler for post requests on the user resource.
+// Creates a new user if fields are valid and returns the newly created user.
 func (u *user) Signup(c *gin.Context) {
 	var newUser models.User
 

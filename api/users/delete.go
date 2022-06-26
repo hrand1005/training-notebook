@@ -8,7 +8,10 @@ import (
 	"github.com/hrand1005/training-notebook/data"
 )
 
-// swagger:route DELETE /users/{id} users deleteuser
+// NOTE: The following method is used for debugging, and should not be reachable
+// 	to normal users during production
+
+// <SWAGGER-IGNORE>:route DELETE /users/{id} users deleteuser
 // Delete a user.
 // responses:
 //  204: noContent

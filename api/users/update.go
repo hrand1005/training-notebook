@@ -9,7 +9,10 @@ import (
 	"github.com/hrand1005/training-notebook/models"
 )
 
-// swagger:route PUT /users/{id} users updateUser
+// NOTE: The following method is used for debugging, and should not be reachable
+// 	to normal users during production
+
+// <SWAGGER-IGNORE>:route PUT /users/{id} users updateUser
 // Update a user.
 // responses:
 //  200: userResponse

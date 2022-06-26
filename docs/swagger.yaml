@@ -144,42 +144,7 @@ paths:
       summary: Update a set.
       tags:
       - sets
-  /users:
-    get:
-      operationId: readAllUsers
-      responses:
-        "200":
-          $ref: '#/responses/usersResponse'
-        "500":
-          $ref: '#/responses/errorResponse'
-      summary: Read all users.
-      tags:
-      - users
-    post:
-      operationId: createUser
-      responses:
-        "201":
-          $ref: '#/responses/userResponse'
-        "400":
-          $ref: '#/responses/errorResponse'
-        "500":
-          $ref: '#/responses/errorResponse'
-      summary: Creates a user.
-      tags:
-      - users
   /users/{id}:
-    delete:
-      operationId: deleteuser
-      responses:
-        "204":
-          $ref: '#/responses/noContent'
-        "404":
-          $ref: '#/responses/errorResponse'
-        "500":
-          $ref: '#/responses/errorResponse'
-      summary: Delete a user.
-      tags:
-      - users
     get:
       operationId: readUser
       responses:
@@ -194,18 +159,34 @@ paths:
       summary: Read a user.
       tags:
       - users
-    put:
-      operationId: updateUser
+  /users/login:
+    post:
+      description: Signs up a new user with the given information
+      operationId: login
       responses:
-        "200":
+        "201":
           $ref: '#/responses/userResponse'
         "400":
+          $ref: '#/responses/errorResponse'
+        "401":
           $ref: '#/responses/errorResponse'
         "404":
           $ref: '#/responses/errorResponse'
         "500":
           $ref: '#/responses/errorResponse'
-      summary: Update a user.
+      tags:
+      - users
+  /users/signup:
+    post:
+      description: Signs up a new user with the given information
+      operationId: signup
+      responses:
+        "201":
+          $ref: '#/responses/userResponse'
+        "400":
+          $ref: '#/responses/errorResponse'
+        "500":
+          $ref: '#/responses/errorResponse'
       tags:
       - users
 produces:

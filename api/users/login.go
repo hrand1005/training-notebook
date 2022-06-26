@@ -19,6 +19,18 @@ const (
 	LoginCookieHTTPOnly = true
 )
 
+// swagger:route POST /users/login users login
+// Signs up a new user with the given information
+// responses:
+//  201: userResponse
+//  400: errorResponse
+//  401: errorResponse
+//  404: errorResponse
+//  500: errorResponse
+
+// Login is the handler that attempts to login a user. Checks the
+// provided credentials and upon success sets the headers of the client
+// with cookie token.
 func (u *user) Login(c *gin.Context) {
 	var credentials models.Credentails
 
