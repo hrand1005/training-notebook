@@ -28,7 +28,7 @@ jobs:
       run: ./scripts/test.sh -i
     
     - name: Format
-    - run: go fmt ./...
+      run: go fmt ./...
 
     - name: Commit changes
       uses: EndBug/add-and-commit@v9
