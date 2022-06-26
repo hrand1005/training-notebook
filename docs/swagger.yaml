@@ -11,8 +11,6 @@ definitions:
   Set:
     description: Set is the model representation of a sets resource
     properties:
-      id:
-        $ref: '#/definitions/SetID'
       intensity:
         format: double
         type: number
@@ -20,21 +18,24 @@ definitions:
       movement:
         type: string
         x-go-name: Movement
+      set-id:
+        $ref: '#/definitions/SetID'
+      user-id:
+        $ref: '#/definitions/UserID'
       volume:
         format: double
         type: number
         x-go-name: Volume
     required:
     - set-id
-    - id
     type: object
-    x-go-package: github.com/hrand1005/training-notebook/data/set
+    x-go-package: github.com/hrand1005/training-notebook/models
   SetID:
     description: SetID is the unique int identifier assigned to sets when added to
       the SetDB
     format: int64
     type: integer
-    x-go-package: github.com/hrand1005/training-notebook/data/set
+    x-go-package: github.com/hrand1005/training-notebook/models
   UserID:
     description: UserID is the unique identifier for a user of the application
     format: int64
