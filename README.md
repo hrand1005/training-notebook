@@ -35,7 +35,7 @@ the resource layer.
 
 Resources and their associated CRUD operations are defined in the `api` package.
 The path to a particular handler (or 'controller') adheres to the form 
-`api/<resource>/<CRUD operation>`, for example, `api/sets/create`. Global middleware
+`api/<resource>/<CRUD operation>.go`, for example, `api/sets/create.go`. Global middleware
 (e.g. a latency logger) are defined directly in `api/` while resource-specific 
 middlewares (e.g. user authentication/verification) are defined in their respective
 resource packages.
@@ -48,15 +48,15 @@ go linting/vetting, and swagger spec generation.
 ## Go Frameworks/Libraries 
 
 Branch main features an implementation of a web-backend using the popular HTTP 
-handling framework 'Gin', and alternatives such as 'gorilla' can be found on 
+handling framework [Gin](https://github.com/gin-gonic/gin), and alternatives such as [gorilla/mux](https://github.com/gorilla/mux) can be found on 
 other branches. 
 
 Also used in this project:
-* go-swagger for API documentation generation
-* golang-jwt for creating/parsing json web tokens
-* joho/godotenv for loading environment variables
-* crypto for password checking/hashing
-* go-playground/validator for validating struct fields in json serialization
+* [go-swagger](https://github.com/go-swagger/go-swagger) for API documentation generation
+* [golang-jwt](https://github.com/golang-jwt/jwt) for creating/parsing json web tokens
+* [joho/godotenv](https://github.com/joho/godotenv) for loading environment variables
+* [crypto](https://pkg.go.dev/golang.org/x/crypto) for password checking/hashing
+* [go-playground/validator](https://github.com/go-playground/validator) for validating struct fields in json serialization
 
 # Setup
 

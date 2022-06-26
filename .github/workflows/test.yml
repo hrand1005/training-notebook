@@ -26,3 +26,13 @@ jobs:
 
     - name: Integration Test
       run: ./scripts/test.sh -i
+    
+    - name: Format
+    - run: go fmt ./...
+
+    - name: Commit changes
+      uses: EndBug/add-and-commit@v9
+      with:
+        author_name: github actions
+        message: 'github actions: formatted go files'
+        add: '*.go'
