@@ -30,7 +30,7 @@ while getopts ':aip:h' opt; do
   case "$opt" in
     a)
       echo "Running all unit tests..."
-      go test -v $(go list $TRAINING_NOTEBOOK... | grep -v /test)
+      go test -cover -v $(go list $TRAINING_NOTEBOOK... | grep -v /test)
       if [ $? -eq 0 ]; then
         exit 0
       fi
@@ -38,7 +38,7 @@ while getopts ':aip:h' opt; do
       ;;
     p) 
       echo "Running tests in package '${OPTARG}'"
-      go test -v -timeout 30s $TRAINING_NOTEBOOK/$OPTARG
+      go test -v -cover -timeout 30s $TRAINING_NOTEBOOK/$OPTARG
       if [ $? -eq 0 ]; then
         exit 0
       fi
