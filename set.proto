@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package set;
+
+option go_package = "./set";
+
+// The set service definition
+service Set {
+    // Creates a new set
+    rpc Create (CreateRequest) returns (CreateResponse)
+    rpc Read (ReadRequest) returns (ReadResponse)
+}
+
+message CreateRequest {
+    uint32 id = 1; 
+    uint32 userId = 2;
+    string name = 3;
+    uint32 reps = 4
+    float intensity = 5;
+    float volume = 6;
+}
+
+message CreateResponse {
+    uint32 id = 1; 
+    uint32 userId = 2;
+    string name = 3;
+    uint32 reps = 4
+    float intensity = 5;
+    float volume = 6;
+}
+
+message ReadRequest {
+    uint32 id
+    uint32 userId
+}
+
+message ReadResponse {
+    uint32 id = 1; 
+    uint32 userId = 2;
+    string name = 3;
+    uint32 reps = 4
+    float intensity = 5;
+    float volume = 6;
+}
