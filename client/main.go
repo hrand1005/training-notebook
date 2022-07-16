@@ -21,9 +21,9 @@ func main() {
 	ctx := context.Background()
 
 	newSet := &set.CreateRequest{
-		Id: 1,
-		Name: "Curl",
-		Reps: 20,
+		Id:        1,
+		Name:      "Curl",
+		Reps:      20,
 		Intensity: 65.0,
 	}
 

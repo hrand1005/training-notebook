@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package set;
 
-option go_package = "./set";
+option go_package = "github.com/hrand1005/training-notebook/set";
 
 // The set service definition
 service Set {
@@ -13,32 +13,29 @@ service Set {
 
 message CreateRequest {
     uint32 id = 1; 
-    uint32 userId = 2;
+    uint32 user_id = 2;
     string name = 3;
-    uint32 reps = 4;
     float intensity = 5;
     float volume = 6;
 }
 
 message CreateResponse {
     uint32 id = 1; 
-    uint32 userId = 2;
+    uint32 user_id = 2;
     string name = 3;
-    uint32 reps = 4;
     float intensity = 5;
     float volume = 6;
 }
 
 message ReadRequest {
     uint32 id = 1;
-    uint32 userId = 2;
+    uint32 user_id = 2;
 }
 
 message ReadResponse {
     uint32 id = 1; 
-    uint32 userId = 2;
+    uint32 user_id = 2;
     string name = 3;
-    uint32 reps = 4;
     float intensity = 5;
     float volume = 6;
 }
