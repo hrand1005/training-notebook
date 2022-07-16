@@ -26,7 +26,6 @@ func (s *setService) Create(ctx context.Context, req *set.CreateRequest) (*set.C
 	return &set.CreateResponse{
 		Id:        req.Id,
 		Name:      req.Name,
-		Reps:      req.Reps,
 		Intensity: req.Intensity,
 		Volume:    req.Volume,
 	}, nil

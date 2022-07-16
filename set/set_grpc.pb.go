@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type SetClient interface {
 	// Creates a new set
 	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error)
+	//rpc Create (CreateRequest) returns (stream CreateResponse) {}
 	Read(ctx context.Context, in *ReadRequest, opts ...grpc.CallOption) (*ReadResponse, error)
 }
 
@@ -59,6 +60,7 @@ func (c *setClient) Read(ctx context.Context, in *ReadRequest, opts ...grpc.Call
 type SetServer interface {
 	// Creates a new set
 	Create(context.Context, *CreateRequest) (*CreateResponse, error)
+	//rpc Create (CreateRequest) returns (stream CreateResponse) {}
 	Read(context.Context, *ReadRequest) (*ReadResponse, error)
 	mustEmbedUnimplementedSetServer()
 }

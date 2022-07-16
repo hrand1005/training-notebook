@@ -23,7 +23,7 @@ func main() {
 	newSet := &set.CreateRequest{
 		Id:        1,
 		Name:      "Curl",
-		Reps:      20,
+		Volume:    20,
 		Intensity: 65.0,
 	}
 

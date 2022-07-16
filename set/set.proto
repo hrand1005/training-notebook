@@ -2,13 +2,15 @@ syntax = "proto3";
 
 package set;
 
-option go_package = "github.com/hrand1005/training-notebook/set";
+option go_package = "./set";
 
 // The set service definition
 service Set {
     // Creates a new set
     rpc Create (CreateRequest) returns (CreateResponse) {}
+    //rpc Create (CreateRequest) returns (stream CreateResponse) {}
     rpc Read (ReadRequest) returns (ReadResponse) {}
+    //rpc Read (ReadRequest) returns (stream ReadResponse) {}
 }
 
 message CreateRequest {
@@ -16,7 +18,7 @@ message CreateRequest {
     uint32 user_id = 2;
     string name = 3;
     float intensity = 5;
-    float volume = 6;
+    uint32 volume = 6;
 }
 
 message CreateResponse {
@@ -24,7 +26,7 @@ message CreateResponse {
     uint32 user_id = 2;
     string name = 3;
     float intensity = 5;
-    float volume = 6;
+    uint32 volume = 6;
 }
 
 message ReadRequest {
@@ -37,5 +39,5 @@ message ReadResponse {
     uint32 user_id = 2;
     string name = 3;
     float intensity = 5;
-    float volume = 6;
+    uint32 volume = 6;
 }
