@@ -22,10 +22,6 @@ func New(db data.UserDB) (*user, error) {
 }
 
 func (u *user) RegisterHandlers(g *gin.RouterGroup) {
-	// TODO: REQUIRE ADMIN PERMS
-	//g.GET("/", u.ReadAll)
-	//g.POST("/", u.Create)
-
 	// Authorization NOT required
 	g.POST("/signup", u.Signup)
 	g.POST("/login", u.Login)

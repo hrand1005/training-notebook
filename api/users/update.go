@@ -9,9 +9,6 @@ import (
 	"github.com/hrand1005/training-notebook/models"
 )
 
-// NOTE: The following method is used for debugging, and should not be reachable
-// 	to normal users during production
-
 // <SWAGGER-IGNORE>:route PUT /users/{id} users updateUser
 // Update a user.
 // responses:
@@ -47,7 +44,6 @@ func (u *user) Update(c *gin.Context) {
 		return
 	}
 
-	// TODO: require authentication
 	newUser.ID = userID
 	c.IndentedJSON(http.StatusOK, newUser)
 }

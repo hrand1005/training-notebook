@@ -28,7 +28,7 @@ func RequireAuthorization( /*l AuthorizationLevel*/ ) gin.HandlerFunc {
 		}
 
 		c.Set(UserIDFromContextKey, userID)
-		//
+
 		// user is authorized, continue chaining HandlerFuncs
 		c.Next()
 	}
@@ -37,7 +37,6 @@ func RequireAuthorization( /*l AuthorizationLevel*/ ) gin.HandlerFunc {
 func parseUserIDFromToken(token string) (models.UserID, error) {
 	claims := Claims{}
 	parsedToken, err := jwt.ParseWithClaims(token, &claims, func(t *jwt.Token) (interface{}, error) {
-		// TODO: get this from configs
 		return []byte(os.Getenv("SIGNING_KEY")), nil
 	})
 	if err != nil {
@@ -51,10 +50,3 @@ func parseUserIDFromToken(token string) (models.UserID, error) {
 	// TODO: can this return zero? how can I verify that it's initialized?
 	return claims.UserID, nil
 }
-
-/*
-func authorized(token string, l AuthorizationLevel) bool {
-	level := getLevelFromToken(token)
-	return meetsPermissions(l, level)
-}
-*/
