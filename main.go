@@ -59,7 +59,7 @@ func ConstructHTTPServer(conf *Config) (server.Server, error) {
 
 	serverBuilder.RegisterSwaggerDocs(conf.SwaggerSpec)
 	serverBuilder.RegisterFileLogger(conf.LogFile)
-	if conf.Prod {
+	if conf.Frontend != "" {
 		serverBuilder.RegisterFrontend(conf.Frontend)
 	}
 	serverBuilder.SetDB(conf.Database.Path)
