@@ -8,12 +8,17 @@
   <head>
     <meta charset="utf-8" />
     <title>Go wasm</title>
-    <script src=".static/wasm_exec.js"></script>
-    <script src="./static/entrypoint.js"></script>
+    <script src="wasm_exec.js"></script>
+    <script>
+      const go = new Go();
+      WebAssembly.instantiateStreaming(fetch("lib.wasm"), go.importObject).then((result) => {
+          go.run(result.instance);
+      });
+    </script>
   </head>
   <body>
     <div class="container">
-      <h2>Oak WebAssembly Framework</h2>
+      <h2>HERB IS COOL</h2>
     </div>
   </body>
 </html>
