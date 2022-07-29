@@ -13,8 +13,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/hrand1005/training-notebook/api"
-	"github.com/hrand1005/training-notebook/api/sets"
-	"github.com/hrand1005/training-notebook/api/users"
 	"github.com/hrand1005/training-notebook/data"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -84,6 +82,7 @@ func (b *builder) Construct() (Server, error) {
 	}
 
 	router := gin.New()
+	apiGroup := router.Group("/api")
 
 	// add outstanding resources to closers, and the server will call close
 	// on them before gracefully shutting down
@@ -96,7 +95,7 @@ func (b *builder) Construct() (Server, error) {
 			log.Printf("Failed to create log file: %v\nProceeding without logger...", err)
 		} else {
 			logger := log.New(f, "", log.LstdFlags)
-			router.Use(api.LatencyLogger(logger))
+			apiGroup.Use(api.LatencyLogger(logger))
 			closers = append(closers, f)
 		}
 	}
@@ -106,31 +105,9 @@ func (b *builder) Construct() (Server, error) {
 		return nil, fmt.Errorf("no db found, test mode not yet implemented")
 	}
 
-	/***** SETS DB AND RESOURCE *****/
-	setDB, err := data.NewSetDB(b.db)
-	if err != nil {
-		return nil, err
+	if err := api.RegisterAll(b.db, apiGroup); err != nil {
+		return nil, fmt.Errorf("registering api endpoints: %v", err)
 	}
-	setGroup := router.Group("/sets")
-	// the set resource contains CRUD operations for sets
-	// configure with SetDB, an interface for CRUD operations on set data
-	setResource, err := sets.New(setDB)
-	if err != nil {
-		return nil, err
-	}
-	setResource.RegisterHandlers(setGroup)
-
-	/***** USERS DB AND RESOURCE *****/
-	userDB, err := data.NewUserDB(b.db)
-	if err != nil {
-		return nil, err
-	}
-	userGroup := router.Group("/users")
-	userResource, err := users.New(userDB)
-	if err != nil {
-		return nil, err
-	}
-	userResource.RegisterHandlers(userGroup)
 
 	if b.swaggerSpecPath != "" {
 		// set redoc options for swagger spec and create handler
@@ -138,9 +115,8 @@ func (b *builder) Construct() (Server, error) {
 		docHandler := gin.WrapH(middleware.Redoc(docOptions, nil))
 
 		// create docs endpoint, register api documentation with SwaggerSpec
-		docsGroup := router.Group("")
-		docsGroup.GET("/docs", docHandler)
-		docsGroup.StaticFile("/swagger.yaml", b.swaggerSpecPath)
+		apiGroup.GET("/docs", docHandler)
+		apiGroup.StaticFile("/swagger.yaml", b.swaggerSpecPath)
 	}
 
 	if b.frontendPath != "" {

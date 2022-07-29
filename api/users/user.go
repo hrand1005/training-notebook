@@ -27,7 +27,7 @@ func (u *user) RegisterHandlers(g *gin.RouterGroup) {
 	g.POST("/login", u.Login)
 
 	// Require User Authentication for Read/Updates on a user
-	authGroup := g.Group("")
+	authGroup := g.Group("/users")
 	authGroup.Use(RequireAuthorization())
 	authGroup.GET("/:"+UserIDFromParamsKey, u.Read)
 	authGroup.PUT("/:"+UserIDFromParamsKey, u.Update)

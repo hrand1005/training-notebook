@@ -50,6 +50,7 @@ while getopts ':aip:h' opt; do
       $START_TEST_SERVER&
       TEST_SERVER_PID=$!
       wait_for_test_server
+      go clean -testcache $TRAINING_NOTEBOOK/test
       go test -v $TRAINING_NOTEBOOK/test
       if [ $? -eq 0 ]; then
         kill $TEST_SERVER_PID

@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	serverURL = "http://localhost:8080"
+	serverAPI = "http://localhost:8080/api"
 )
 
 var (
@@ -41,7 +41,7 @@ func TestUserSignupAndLogin(t *testing.T) {
     "name": "Herb",
     "password": "cookies"
   }`)
-	signupReq, err := http.NewRequest(http.MethodPost, serverURL+"/users/signup", signupBody)
+	signupReq, err := http.NewRequest(http.MethodPost, serverAPI+"/signup", signupBody)
 	if err != nil {
 		t.Fatalf("Failed to build signup request:\nreq: %+v\nerr: %v", signupReq, err)
 	}
@@ -63,7 +63,7 @@ func TestUserSignupAndLogin(t *testing.T) {
 		"user-id": -1,
 		"password": "cookies"
 	}`)
-	invalidLoginReq, err := http.NewRequest(http.MethodPost, serverURL+"/users/invalidLogin", invalidLoginBody)
+	invalidLoginReq, err := http.NewRequest(http.MethodPost, serverAPI+"/login", invalidLoginBody)
 	if err != nil {
 		t.Fatalf("Failed to build invalidLogin request:\nreq: %+v\nerr: %v", invalidLoginReq, err)
 	}
@@ -90,7 +90,7 @@ func TestUserSignupAndLogin(t *testing.T) {
 		"user-id": %v,
 		"password": "cookies"
 	}`, user.ID))
-	loginReq, err := http.NewRequest(http.MethodPost, serverURL+"/users/login", loginBody)
+	loginReq, err := http.NewRequest(http.MethodPost, serverAPI+"/login", loginBody)
 	if err != nil {
 		t.Fatalf("Failed to build login request:\nreq: %+v\nerr: %v", loginReq, err)
 	}
@@ -118,7 +118,7 @@ func TestUserPostSet(t *testing.T) {
 		"volume": 1,
 		"intensity": 100
   }`)
-	setReq, err := http.NewRequest(http.MethodPost, serverURL+"/sets/", setBody)
+	setReq, err := http.NewRequest(http.MethodPost, serverAPI+"/sets/", setBody)
 	if err != nil {
 		t.Fatalf("Failed to build set post request:\nreq: %+v\nerr: %v", setReq, err)
 	}
@@ -144,7 +144,7 @@ func TestUserPostSet(t *testing.T) {
 		"volume": 1,
 		"intensity": 100
   }`)
-	setReq, err = http.NewRequest(http.MethodPost, serverURL+"/sets/", setBody)
+	setReq, err = http.NewRequest(http.MethodPost, serverAPI+"/sets/", setBody)
 	if err != nil {
 		t.Fatalf("Failed to build set post request:\nreq: %+v\nerr: %v", setReq, err)
 	}
@@ -184,7 +184,7 @@ func TestUserReadSet(t *testing.T) {
 	setID := CreateAndPostSet(clientValid, testSet)
 
 	// attempt to read existing set by id without credentials on the invalid client
-	endpoint := fmt.Sprintf("%s/sets/%v", serverURL, setID)
+	endpoint := fmt.Sprintf("%s/sets/%v", serverAPI, setID)
 	setReq, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		t.Fatalf("Failed to build set read request:\nreq: %+v\nerr: %v", setReq, err)
@@ -233,7 +233,7 @@ func TestUserReadSets(t *testing.T) {
 	clientInvalid := newHTTPClientWithCookieJar()
 
 	// attempt to read sets without any credentials
-	setReq, err := http.NewRequest(http.MethodGet, serverURL+"/sets/", nil)
+	setReq, err := http.NewRequest(http.MethodGet, serverAPI+"/sets/", nil)
 	if err != nil {
 		t.Fatalf("Failed to build set read request:\nreq: %+v\nerr: %v", setReq, err)
 	}
@@ -295,7 +295,7 @@ func TestUserReadSets(t *testing.T) {
 	// verify that the valid client's data can't be retrieved by another logged in user
 	CreateUserAndLogin(clientInvalid, testUser)
 
-	setReq, err = http.NewRequest(http.MethodGet, serverURL+"/sets/", nil)
+	setReq, err = http.NewRequest(http.MethodGet, serverAPI+"/sets/", nil)
 	if err != nil {
 		t.Fatalf("Failed to build set read request:\nreq: %+v\nerr: %v", setReq, err)
 	}
@@ -336,7 +336,7 @@ func TestUserUpdateSet(t *testing.T) {
   }`, updateSet.Movement, updateSet.Volume, updateSet.Intensity))
 
 	// update the set with new fields for the logged in user
-	endpoint := fmt.Sprintf("%s/sets/%v", serverURL, setID)
+	endpoint := fmt.Sprintf("%s/sets/%v", serverAPI, setID)
 	setReq, err := http.NewRequest(http.MethodPut, endpoint, setBody)
 	if err != nil {
 		t.Fatalf("Failed to build set request, err: %v", err)
@@ -393,7 +393,7 @@ func TestUserDeleteSet(t *testing.T) {
 	setID := CreateAndPostSet(clientValid, testSet)
 
 	// attempt to read existing set by id without credentials with invalid client
-	endpoint := fmt.Sprintf("%s/sets/%v", serverURL, setID)
+	endpoint := fmt.Sprintf("%s/sets/%v", serverAPI, setID)
 	setReq, err := http.NewRequest(http.MethodDelete, endpoint, nil)
 	if err != nil {
 		t.Fatalf("Failed to build set read request:\nreq: %+v\nerr: %v", setReq, err)
@@ -440,7 +440,7 @@ func CreateUserAndLogin(c *http.Client, u *models.User) models.UserID {
 		"name": "%s",
 		"password": "%s"
 	}`, u.Name, u.Password))
-	sReq, err := http.NewRequest(http.MethodPost, serverURL+"/users/signup", sBody)
+	sReq, err := http.NewRequest(http.MethodPost, serverAPI+"/signup", sBody)
 	if err != nil {
 		panic("CreateUserAndLogin: " + err.Error())
 	}
@@ -465,7 +465,7 @@ func CreateUserAndLogin(c *http.Client, u *models.User) models.UserID {
 		"user-id": %v,
 		"password": "%s"
 	}`, user.ID, u.Password))
-	lReq, err := http.NewRequest(http.MethodPost, serverURL+"/users/login", lBody)
+	lReq, err := http.NewRequest(http.MethodPost, serverAPI+"/login", lBody)
 	if err != nil {
 		panic("CreateUserAndLogin: " + err.Error())
 	}
@@ -493,7 +493,7 @@ func CreateAndPostSet(c *http.Client, s *models.Set) models.SetID {
 		"intensity": %v
 	}`, s.Movement, s.Volume, s.Intensity))
 
-	setReq, err := http.NewRequest(http.MethodPost, serverURL+"/sets/", setBody)
+	setReq, err := http.NewRequest(http.MethodPost, serverAPI+"/sets/", setBody)
 	if err != nil {
 		panic("CreateAndPostSet: " + err.Error())
 	}
