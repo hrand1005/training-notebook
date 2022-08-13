@@ -41,26 +41,33 @@ func main() {
 		log.Fatalf("Failed to ping mongo db: %v", err)
 	}
 
-	collection := client.Database(db).Collection("test")
-	res, err := collection.InsertOne(ctx, bson.M{"key": "value"})
-	if err != nil {
-		log.Fatalf("Failed to insert test collection: %v", err)
+	mode := os.Getenv("MODE")
+	if mode == "test" {
+		// use client to populate the database with random data
+		if err := SeedDB(ctx, client, db); err != nil {
+			log.Fatalf("Failed to seed database: %v", err)
+		}
 	}
-
-	id := res.InsertedID
-	log.Printf("Inserted collection with ID: %v", id)
 
 	app := fiber.New()
 
 	app.Get("/", func(c *fiber.Ctx) error {
-		var result bson.M
-		err := collection.FindOne(ctx, bson.D{{Key: "_id", Value: id}}).Decode(&result)
+		var results []bson.M
+		cursor, err := client.Database(db).Collection("test").Find(ctx, bson.D{})
+		cursor.All(ctx, &results)
 
 		if err != nil {
 			return fmt.Errorf("get request on '/': %v", err)
 		}
-		return c.JSON(result)
+		return c.JSON(results)
 	})
 
 	app.Listen(":5000")
+}
+
+// TODO: Make semi-random and useful for testing
+func SeedDB(ctx context.Context, client *mongo.Client, db string) error {
+	collection := client.Database(db).Collection("test")
+	_, err := collection.InsertOne(ctx, bson.M{"key": "value"})
+	return err
 }
