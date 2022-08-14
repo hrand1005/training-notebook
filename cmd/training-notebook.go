@@ -43,7 +43,6 @@ func main() {
 		log.Fatalf("Failed to ping mongo db: %v", err)
 	}
 
-
 	mode := os.Getenv("MODE")
 	if mode == "test" {
 		// use client to populate the database with random data
@@ -70,8 +69,8 @@ func main() {
 
 	app.Get("/struct", func(c *fiber.Ctx) error {
 		type result struct {
-			ID primitive.ObjectID `bson:"_id"`
-			Key string `bson:"key,omitempty"`
+			ID  primitive.ObjectID `bson:"_id"`
+			Key string             `bson:"key,omitempty"`
 		}
 		var results []result
 		cur, err := client.Database(db).Collection("test").Find(ctx, bson.D{})
