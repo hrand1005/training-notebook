@@ -9,17 +9,18 @@ import (
 	"os"
 	"time"
 
+	"github.com/brianvoe/gofakeit/v6"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/yaml.v3"
 )
 
 var (
-	conf           = flag.String("config", "", "config file defining the database to be populated")
-	englishLetters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	conf = flag.String("config", "", "config file defining the database to be populated")
 )
 
 const (
@@ -28,6 +29,10 @@ const (
 )
 
 func main() {
+
+	log.SetFlags(log.Ltime)
+	log.SetPrefix("SEEDER: ")
+
 	flag.Parse()
 	if *conf == "" {
 		log.Fatal("--config must be set")
@@ -38,6 +43,7 @@ func main() {
 		log.Fatalf("loadDBConfig: %v", err)
 	}
 
+	// connect to database using config values
 	ctx := context.Background()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(dbConf.URI))
 	if err != nil {
@@ -51,21 +57,22 @@ func main() {
 
 	db := client.Database(dbConf.Name)
 
+	// prepare for random data generation and seed the database
 	rand.Seed(time.Now().UnixNano())
 
-	log.Printf("Seeding collection %q with %v users...", UserCollection, NumUsers)
+	log.Printf("Populating collection %q with %v users...", UserCollection, NumUsers)
 	usersResult, err := seedUsers(ctx, db)
 	if err != nil {
 		log.Fatalf("seedUsers: %v", err)
 	}
 
-	log.Printf("Seeding collection %q with %v sets...", SetCollection, NumSets)
+	log.Printf("Populating collection %q with %v sets...", SetCollection, NumSets)
 	_, err = seedSets(ctx, db, usersResult.InsertedIDs)
 	if err != nil {
 		log.Fatalf("seedSets: %v", err)
 	}
 
-	log.Printf("Successfully populated %q, exiting...", dbConf.Name)
+	log.Printf("Seeding of %q is complete, exiting...", dbConf.Name)
 }
 
 // TODO: Move to shared package when required by the server
@@ -110,17 +117,11 @@ func seedUsers(ctx context.Context, db *mongo.Database) (*mongo.InsertManyResult
 
 	var users []interface{}
 	for i := 0; i < NumUsers; i++ {
-		// generate random fields to populate the new user
-		firstNameLength := rand.Intn(20) + 2
-		lastNameLength := rand.Intn(20) + 2
-		emailLength := rand.Intn(20) + 8
-		passwordHashLength := rand.Intn(100) + 20
-
 		newUser := User{
-			FirstName:    randomString(firstNameLength),
-			LastName:     randomString(lastNameLength),
-			Email:        randomString(emailLength),
-			PasswordHash: randomString(passwordHashLength),
+			FirstName:    gofakeit.FirstName(),
+			LastName:     gofakeit.LastName(),
+			Email:        gofakeit.Email(),
+			PasswordHash: generateHash(gofakeit.Password(true, true, true, true, true, 32)),
 		}
 		users = append(users, newUser)
 	}
@@ -147,21 +148,14 @@ func seedSets(ctx context.Context, db *mongo.Database, userIDs []interface{}) (*
 
 	var sets []interface{}
 	for i := 0; i < NumSets; i++ {
-		// generate random fields to populate the new set
+		// assign set a random existing user
 		userID := userIDs[rand.Intn(len(userIDs))]
-		movementLength := rand.Intn(20) + 5
-		year := rand.Intn(100) + 2000
-		month := time.Month(rand.Intn(11) + 1)
-		day := rand.Intn(27) + 1
-		location := time.FixedZone(randomString(5), rand.Intn(86400))
-		date := time.Date(year, month, day, 0, 0, 0, 0, location)
-
 		newSet := Set{
 			UserID:    userID.(primitive.ObjectID),
-			Movement:  randomString(movementLength),
+			Movement:  gofakeit.Word(),
 			Volume:    rand.Intn(100),
 			Intensity: rand.Float64() * 100,
-			Date:      primitive.NewDateTimeFromTime(date),
+			Date:      primitive.NewDateTimeFromTime(gofakeit.Date()),
 		}
 		sets = append(sets, newSet)
 	}
@@ -169,12 +163,7 @@ func seedSets(ctx context.Context, db *mongo.Database, userIDs []interface{}) (*
 	return collection.InsertMany(ctx, sets)
 }
 
-// randomString returns a random string with the provided length made up of english letters.
-func randomString(length int) string {
-	letters := make([]rune, length)
-	for i := range letters {
-		letters[i] = englishLetters[rand.Intn(len(englishLetters))]
-	}
-
-	return string(letters)
+func generateHash(password string) string {
+	hashBytes, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(hashBytes)
 }

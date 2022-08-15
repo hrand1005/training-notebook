@@ -3,6 +3,7 @@ module github.com/hrand1005/training-notebook
 go 1.18
 
 require (
+	github.com/brianvoe/gofakeit/v6 v6.18.0
 	github.com/gofiber/fiber/v2 v2.36.0
 	github.com/joho/godotenv v1.4.0
 	go.mongodb.org/mongo-driver v1.10.1
