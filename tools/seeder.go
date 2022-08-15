@@ -152,7 +152,7 @@ func seedSets(ctx context.Context, db *mongo.Database, userIDs []interface{}) (*
 		userID := userIDs[rand.Intn(len(userIDs))]
 		newSet := Set{
 			UserID:    userID.(primitive.ObjectID),
-			Movement:  gofakeit.Word(),
+			Movement:  gofakeit.VerbAction(),
 			Volume:    rand.Intn(100),
 			Intensity: rand.Float64() * 100,
 			Date:      primitive.NewDateTimeFromTime(gofakeit.Date()),

@@ -1,0 +1,18 @@
+The training notebook API has a fairly simple set of functional requirements. 
+Like most APIs, it must support functionality for signup/authentication, 
+updating a user/user profile, and posting/editing sets.
+
+Endpoints: 
+
+"/users"
+- CREATE
+- READ
+- UPDATE
+- DELETE
+
+"/sets"
+- CREATE
+- READ
+- UPDATE
+- DELETE
+- LIST (query with start/end times)
