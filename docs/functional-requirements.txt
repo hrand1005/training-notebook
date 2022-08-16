@@ -16,3 +16,57 @@ Endpoints:
 - UPDATE
 - DELETE
 - LIST (query with start/end times)
+
+V1 Schema:
+
+For endpoints which provide one or more resources in the response, the resources
+will be labeled. For example, getting a single set with GET /sets/<id> might have
+a response like this:
+
+{
+  "set": {
+    "id": 9,
+    "movement": "curl", 
+    "volume": 12,
+    "intensity": 65.0
+  }
+}
+
+and the analagous list read (GET /sets/) response might look like this:
+
+{
+  "sets": [
+    {
+      "id": 9,
+      "movement": "curl", 
+      "volume": 12,
+      "intensity": 65.0
+    },
+    {
+      "id": 10,
+      "movement": "press", 
+      "volume": 10,
+      "intensity": 70.0
+    }
+  ]
+}
+
+and if pagination or other metadata is required, it could be put in the response like so:
+
+{
+  "page-id": 1234,
+  "sets": [
+    {
+      "id": 9,
+      "movement": "curl", 
+      "volume": 12,
+      "intensity": 65.0
+    },
+    {
+      "id": 10,
+      "movement": "press", 
+      "volume": 10,
+      "intensity": 70.0
+    }
+  ]
+}
