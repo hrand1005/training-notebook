@@ -1,0 +1,101 @@
+V1 Schema:
+
+After some thought, I've decided to try my best to adhere to the jsonapi specifications
+as defined by jsonapi.org.
+
+One resource object in this design is the "set". A single set response (such as the response
+to a GET request on /sets/<id>) would look like this:
+
+{
+  "data": {
+    "type": "set",
+    "id": "9",
+    "attributes": {
+      "movement": "curl", 
+      "volume": 12,
+      "intensity": 65.0
+    }
+    "relationships": {
+      "owner": {
+        "links": {
+          "self": "/user/2/sets/9"
+          "related": "/user/2"
+        }
+        "data": {
+          "type": "user",
+          "id": "2"
+        }
+      }
+    }
+    "links": {
+      "self": "/sets/9"
+    }
+  }
+}
+
+Note that the relationships is demonstrative, and not necessarily required. I'm not sure that 
+I'll put a relationships field in my set responses, but it's possible.
+The analagous list read (GET /sets) response might look like this:
+
+{
+  "data": [{
+    "type": "set",
+    "id": "9",
+    "attributes": {
+      "movement": "curl", 
+      "volume": 12,
+      "intensity": 65.0
+    }
+  },
+  {
+    "type": "set",
+    "id": "10",
+    "attributes": {
+      "movement": "press",
+      "volume": 5,
+      "intensity": 82.5
+    }
+  }],
+  "links": {
+    "self": "/sets"
+  }
+}
+
+and if pagination or other metadata is required, it could be put in the response like so:
+
+{
+  "data": [{
+    "type": "set",
+    "id": "9",
+    "attributes": {
+      "movement": "curl", 
+      "volume": 12,
+      "intensity": 65.0
+    }
+  },
+  {
+    "type": "set",
+    "id": "10",
+    "attributes": {
+      "movement": "press",
+      "volume": 5,
+      "intensity": 82.5
+    }
+  }],
+  "links": {
+    "self": {
+    "next": "/sets<pagination-query-string?idk>"
+    }
+  }
+}
+
+If there's an error response, (which must also be indicated by a 4XX http status code), then
+there should be an "errors" response:
+
+{
+  "errors": [{
+    "status": "404",
+    "title": "Not Found",
+    "details": "Set with id '9' could not be retrieved. Did you mean '69'?"
+  }]
+}
