@@ -1,23 +1,21 @@
-Feature: Sets
+Feature: sets
 
-  Scenario: Create new set
-    When the client sends "POST" request to endpoint "/sets" with body:
-    """
-    {
-      "data": {
-        "type": "set",
-        "attributes": {
-          "movement": "curl", 
-          "volume": 12,
-          "intensity": 65.0
-        }
-      }
-    }
-    """
-    Then the server responds with status code "204"
+  Background: 
+    Given a valid set exists with id "1"
 
-  Scenario: Read existing set 
-    Given "set-id" exists
-    When the client sends "GET" request to endpoint "/sets/set-id"
-    Then the server responds with status code "200" 
+  Scenario: 
+    Given the client is not authenticated
+    When the client sends request "GET /sets/1"
+    Then the server responds with status code "403"
 
+  Scenario:
+    Given the client is authenticated 
+    And the client is not the owner of the resource
+    When the client sends request "GET /sets/1"
+    Then the server responds with status code "403"
+
+  Scenario:
+    Given the client is authenticated 
+    And the client is the owner of the resource
+    When the client sends request "GET /sets/1"
+    Then the server responds with status code "200"
