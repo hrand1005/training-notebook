@@ -10,7 +10,7 @@ Feature: sets
 
   Scenario:
     Given the client is authenticated 
-    And the client is not the owner of the resource
+    But the client is not the owner of the resource
     When the client sends request "GET /sets/1"
     Then the server responds with status code "403"
 

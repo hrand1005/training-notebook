@@ -3,24 +3,22 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log"
 	"math/rand"
-	"os"
 	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/hrand1005/training-notebook/internal/config"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"golang.org/x/crypto/bcrypt"
-	"gopkg.in/yaml.v3"
 )
 
 var (
-	conf = flag.String("config", "", "config file defining the database to be populated")
+	configPath = flag.String("config", "", "config file defining the database to be populated")
 )
 
 const (
@@ -34,18 +32,18 @@ func main() {
 	log.SetPrefix("SEEDER: ")
 
 	flag.Parse()
-	if *conf == "" {
+	if *configPath == "" {
 		log.Fatal("--config must be set")
 	}
 
-	dbConf, err := loadDBConfig(*conf)
+	conf, err := config.Load(*configPath)
 	if err != nil {
-		log.Fatalf("loadDBConfig: %v", err)
+		log.Fatalf("config.Load: %v", err)
 	}
 
 	// connect to database using config values
 	ctx := context.Background()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(dbConf.URI))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(conf.Database.URI))
 	if err != nil {
 		log.Fatalf("failed to create mongo db client: %v", err)
 	}
@@ -55,7 +53,7 @@ func main() {
 		log.Fatalf("failed to ping mongo db: %v", err)
 	}
 
-	db := client.Database(dbConf.Name)
+	db := client.Database(conf.Database.Name)
 
 	// prepare for random data generation and seed the database
 	rand.Seed(time.Now().UnixNano())
@@ -72,31 +70,7 @@ func main() {
 		log.Fatalf("seedSets: %v", err)
 	}
 
-	log.Printf("Seeding of %q is complete, exiting...", dbConf.Name)
-}
-
-// TODO: Move to shared package when required by the server
-type DBConfig struct {
-	Name string `yaml:"database-name"`
-	URI  string `yaml:"mongodb-uri"`
-}
-
-// loadDBConfig loads relevant mongodb information from the provided
-// config file path.
-func loadDBConfig(file string) (DBConfig, error) {
-	f, err := os.Open(file)
-	if err != nil {
-		return DBConfig{}, fmt.Errorf("opening file: %s, err: %v", file, err)
-	}
-	defer f.Close()
-
-	var dbConf DBConfig
-	d := yaml.NewDecoder(f)
-	if err := d.Decode(&dbConf); err != nil {
-		return DBConfig{}, fmt.Errorf("decoding config: %v", err)
-	}
-
-	return dbConf, nil
+	log.Printf("Seeding of %q is complete, exiting...", conf.Database.Name)
 }
 
 // TODO: Move models to shared package
