@@ -12,7 +12,7 @@ readonly BUILD_TEST_SERVER="go build cmd/training-notebook/main.go"
 readonly START_TEST_SERVER="./main --config=$TEST_CONFIG_PATH"
 # TODO: remove duplicate from config
 readonly TEST_SERVER_HOST="localhost"
-readonly TEST_SERVER_ADDR=8080
+readonly TEST_SERVER_ADDR=5000
 readonly MAX_RETRIES=10
 
 wait_for_test_server() {

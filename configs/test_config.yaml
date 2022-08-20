@@ -2,7 +2,8 @@ database-settings:
   name: "training-notebook-test-db"
   uri: "mongodb://localhost:27017"
 server-settings:
-  port: ":8080"
+  host: "http://localhost"
+  port: ":5000"
   idle-timeout: 120s
   read-timeout: 1s
   write-timeout: 1s

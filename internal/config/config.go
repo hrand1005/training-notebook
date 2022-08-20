@@ -18,6 +18,7 @@ type DBConfig struct {
 }
 
 type ServerConfig struct {
+	Host         string        `yaml:"host"`
 	Port         string        `yaml:"port"`
 	IdleTimeout  time.Duration `yaml:"idle-timeout"`
 	ReadTimeout  time.Duration `yaml:"read-timeout"`
