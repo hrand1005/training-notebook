@@ -4,6 +4,11 @@ import (
 	"testing"
 )
 
+const (
+	TestURI = "mongodb://localhost:27017"
+	TestDB  = "test"
+)
+
 // TestNew tests the main constructor for the mongo package.
 func TestNew(t *testing.T) {
 	tests := []struct {
@@ -14,7 +19,7 @@ func TestNew(t *testing.T) {
 	}{
 		{
 			name:       "Nominal case returns handle and nil error",
-			uri:        "mongodb://temporary.db",
+			uri:        TestURI,
 			wantHandle: true, // non-nil
 			wantErr:    false,
 		},
@@ -27,7 +32,7 @@ func TestNew(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			handle, err := New(tc.uri)
+			handle, err := New(tc.uri, TestDB)
 			gotHandle := handle != nil
 			gotErr := err != nil
 

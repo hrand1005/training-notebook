@@ -29,7 +29,7 @@ func main() {
 		log.Fatalf("failed to load server configs from %s, err: %v", *configPath, err)
 	}
 
-	handle, err := mongo.New(conf.Database.URI)
+	handle, err := mongo.New(conf.Database.URI, conf.Database.Name)
 	if err != nil {
 		log.Fatalf("failed to create new mongo db handle: %v", err)
 	}
