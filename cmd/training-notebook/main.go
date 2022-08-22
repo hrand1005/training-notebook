@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"log"
 
@@ -9,11 +8,12 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/hrand1005/training-notebook/internal/config"
+	"github.com/hrand1005/training-notebook/internal/mongo"
 	// "go.mongodb.org/mongo-driver/bson"
 	// "go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
+	// "go.mongodb.org/mongo-driver/mongo"
+	// "go.mongodb.org/mongo-driver/mongo/options"
+	// "go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 var configPath = flag.String("config", "", "Path to file containing server configs")
@@ -29,16 +29,11 @@ func main() {
 		log.Fatalf("failed to load server configs from %s, err: %v", *configPath, err)
 	}
 
-	ctx := context.Background()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(conf.Database.URI))
+	handle, err := mongo.New(conf.Database.URI)
 	if err != nil {
-		log.Fatalf("failed to create mongo db client: %v", err)
+		log.Fatalf("failed to create new mongo db handle: %v", err)
 	}
-	defer client.Disconnect(ctx)
-
-	if err := client.Ping(ctx, readpref.Primary()); err != nil {
-		log.Fatalf("Failed to ping mongo db: %v", err)
-	}
+	defer handle.Close()
 
 	app := fiber.New()
 
