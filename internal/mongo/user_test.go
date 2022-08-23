@@ -3,6 +3,8 @@ package mongo
 import (
 	"context"
 	"testing"
+
+	"github.com/hrand1005/training-notebook/internal/app"
 )
 
 // TestInsert tests the UserStore interface's Insert() method.
@@ -19,15 +21,15 @@ func TestInsert(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		store   UserStore
-		user    *User
+		store   app.UserStore
+		user    *app.User
 		wantID  bool
 		wantErr bool
 	}{
 		{
 			name:  "Nominal case returns ID and nil error",
 			store: validStore,
-			user: &User{
+			user: &app.User{
 				FirstName:    "yorbus",
 				LastName:     "bonk",
 				Email:        "ybonk@apple.mail",
@@ -39,7 +41,7 @@ func TestInsert(t *testing.T) {
 		{
 			name:  "Invalid user store case returns empty ID and nil error",
 			store: invalidStore,
-			user: &User{
+			user: &app.User{
 				FirstName:    "yorbus",
 				LastName:     "bonk",
 				Email:        "ybonk@apple.mail",
@@ -70,14 +72,14 @@ func TestInsert(t *testing.T) {
 
 // newValidUserStore returns a UserStore whose database operations perform as expected.
 // NOTE: for testing only
-func newValidUserStore(h *mongoHandle) UserStore {
+func newValidUserStore(h *mongoHandle) app.UserStore {
 	return NewUserStore(h)
 }
 
 // newInvalidUserStore returns a UserStore whose underlying context has been canceled, thus
 // all database operations will fail.
 // NOTE: for testing only
-func newInvalidUserStore(h *mongoHandle) UserStore {
+func newInvalidUserStore(h *mongoHandle) app.UserStore {
 	cancelCtx, cancelFunc := context.WithCancel(context.Background())
 	cancelFunc()
 	return &userStore{

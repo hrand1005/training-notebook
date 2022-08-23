@@ -4,22 +4,16 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hrand1005/training-notebook/internal/app"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// TODO: move to models?
-type User struct {
-	// TODO: decide ID field type
-	ID           string `bson:"_id,omitempty"`
+type UserDocument struct {
 	FirstName    string `bson:"first-name"`
 	LastName     string `bson:"last-name"`
 	Email        string `bson:"email"`
 	PasswordHash string `bson:"password-hash"`
-}
-
-type UserStore interface {
-	Insert(u *User) (string, error)
 }
 
 type userStore struct {
@@ -29,20 +23,38 @@ type userStore struct {
 
 const UserCollection = "users"
 
-func NewUserStore(h *mongoHandle) UserStore {
+// NewUserStore creates a user collection in the database in the
+// provided mongo handle. Returns a UserStore for data operations.
+func NewUserStore(h *mongoHandle) app.UserStore {
 	return &userStore{
 		coll: h.db.Collection(UserCollection),
 		ctx:  h.ctx,
 	}
 }
 
-func (s userStore) Insert(u *User) (string, error) {
-	res, err := s.coll.InsertOne(s.ctx, u)
+// Insert saves the user model in the UserStore.
+// If successful, returns UserID, else returns error.
+func (s *userStore) Insert(u *app.User) (app.UserID, error) {
+	doc := userToDocument(u)
+	res, err := s.coll.InsertOne(s.ctx, doc)
 	if err != nil {
 		return "", fmt.Errorf("failed to insert user: %v", err)
 	}
 
-	objectID := res.InsertedID.(primitive.ObjectID)
+	return userIDFromResult(res), nil
+}
 
-	return objectID.String(), nil
+/* --- INTERNAL USE ONLY --- */
+
+func userToDocument(u *app.User) *UserDocument {
+	return &UserDocument{
+		FirstName:    u.FirstName,
+		LastName:     u.LastName,
+		Email:        u.Email,
+		PasswordHash: u.PasswordHash,
+	}
+}
+
+func userIDFromResult(r *mongo.InsertOneResult) app.UserID {
+	return app.UserID(r.InsertedID.(primitive.ObjectID).Hex())
 }
