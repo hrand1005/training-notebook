@@ -15,5 +15,5 @@ type UserStore interface {
 }
 
 type UserService interface {
-	Create(UserID) (*User, error)
+	Create() (UserID, error)
 }
