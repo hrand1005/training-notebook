@@ -1,4 +1,4 @@
-// Package classification of Users API.
+// Package classification Users API.
 //
 //   Schemes: http, https
 //   Host: localhost
@@ -25,26 +25,11 @@
 // swagger:meta
 package user
 
-type responseFields struct {
-	ID   string `json:"id"`
-	Type string `json:"type"`
-}
-
 // swagger:parameters createUser
-type userObject struct {
-	ID         string         `json:"id,omitempty"`
-	Type       string         `json:"type"`
-	Attributes userAttributes `json:"attributes"`
-}
-
-type userAttributes struct {
-	FirstName string `json:"first-name"`
-	LastName  string `json:"last-name"`
-	Email     string `json:"email"`
-}
-
 type userRequest struct {
-	Data userObject `json:"data"`
+	// A single user
+	// in:body
+	Body RequestBody
 }
 
 // returns a user in the response
@@ -52,13 +37,38 @@ type userRequest struct {
 type userResponse struct {
 	// A single user
 	// in:body
-	Data userObject `json:"data"`
+	Body ResponseBody
 }
 
 // returns users in the response
-// swagger:response userResponse
+// swagger:response usersResponse
 type usersResponse struct {
-	// Multiple users
-	// in: body
-	Data []userObject `json:"data"`
+	// A single user
+	// in:body
+	Body []ResponseBody
+}
+
+type Attributes struct {
+	FirstName string `json:"first-name"`
+	LastName  string `json:"last-name"`
+	Email     string `json:"email"`
+}
+
+type RequestData struct {
+	Type       string     `json:"type"`
+	Attributes Attributes `json:"attributes"`
+}
+
+type ResponseData struct {
+	ID         string     `json:"id"`
+	Type       string     `json:"type"`
+	Attributes Attributes `json:"attributes"`
+}
+
+type RequestBody struct {
+	Data RequestData `json:"data"`
+}
+
+type ResponseBody struct {
+	Data ResponseData `json:"data"`
 }

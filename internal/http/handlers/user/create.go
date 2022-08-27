@@ -6,12 +6,8 @@ import (
 
 // Create handles user creation by parsing the request into a User to
 // call the UserService Create method.
-// swagger:route POST /users createUser
-// Creates a user.
-// responses:
-// 201: usersResponse
 func (u *UserHandler) Create(c *fiber.Ctx) error {
-	var req userRequest
+	var req RequestBody
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "invalid json",
@@ -31,6 +27,6 @@ func (u *UserHandler) Create(c *fiber.Ctx) error {
 	}
 
 	// create response from model
-	resp := BuildUserResponse(userID, user)
+	resp := BuildResponse(userID, user)
 	return c.Status(fiber.StatusCreated).JSON(resp)
 }
