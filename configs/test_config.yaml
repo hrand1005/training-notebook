@@ -7,3 +7,5 @@ server-settings:
   idle-timeout: 120s
   read-timeout: 1s
   write-timeout: 1s
+  api:
+    prefix: "/api/v1"

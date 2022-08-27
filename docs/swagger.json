@@ -1,0 +1,121 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "title": "of Users API.",
+    "contact": {
+      "name": "Herbie Rand",
+      "url": "http://hrand1005.github.io",
+      "email": "hjrand1005@gmail.com"
+    },
+    "license": {
+      "name": "None"
+    },
+    "version": "0.0.1"
+  },
+  "host": "localhost",
+  "basePath": "/api/v1/users",
+  "paths": {
+    "/users": {
+      "post": {
+        "summary": "Creates a user.",
+        "operationId": "createUser",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "ID",
+            "name": "id",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "x-go-name": "Type",
+            "name": "type",
+            "in": "query"
+          },
+          {
+            "$ref": "#/definitions/userAttributes",
+            "x-go-name": "Attributes",
+            "name": "attributes",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/usersResponse"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "userAttributes": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "x-go-name": "Email"
+        },
+        "first-name": {
+          "type": "string",
+          "x-go-name": "FirstName"
+        },
+        "last-name": {
+          "type": "string",
+          "x-go-name": "LastName"
+        }
+      },
+      "x-go-package": "github.com/hrand1005/training-notebook/internal/http/handlers/user"
+    },
+    "userObject": {
+      "type": "object",
+      "properties": {
+        "attributes": {
+          "$ref": "#/definitions/userAttributes"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "type": {
+          "type": "string",
+          "x-go-name": "Type"
+        }
+      },
+      "x-go-package": "github.com/hrand1005/training-notebook/internal/http/handlers/user"
+    }
+  },
+  "responses": {
+    "userResponse": {
+      "description": "returns users in the response",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/userObject"
+        },
+        "$ref": "#/definitions/userObject"
+      }
+    }
+  },
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "name": "KEY",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "api_key": []
+    }
+  ]
+}

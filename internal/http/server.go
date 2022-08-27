@@ -7,15 +7,18 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/hrand1005/training-notebook/internal/config"
+	"github.com/hrand1005/training-notebook/internal/http/handlers"
 )
 
 // Server interfaces can be started with a context.
 // The context should be used to send the server a 'done' signal.
 type Server interface {
 	Start(context.Context)
+	RegisterHandler(handlers.Handler)
 }
 
 type server struct {
+	api       fiber.Router
 	app       *fiber.App
 	addr      string
 	resources []io.Closer
@@ -32,9 +35,15 @@ func BuildServer(conf config.ServerConfig) (Server, error) {
 	)
 
 	return &server{
+		api:  app.Group(conf.API.Prefix),
 		app:  app,
-		addr: conf.Host + conf.Port,
+		addr: conf.Port,
 	}, nil
+}
+
+// RegisterHandler registers the given handler on the server's api endpoint.
+func (s *server) RegisterHandler(h handlers.Handler) {
+	h.Register(s.api)
 }
 
 // Start starts the server listening on the configured address. The

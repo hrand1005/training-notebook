@@ -17,12 +17,17 @@ type DBConfig struct {
 	URI  string `yaml:"uri"`
 }
 
+type APIConfig struct {
+	Prefix string `yaml:"prefix"`
+}
+
 type ServerConfig struct {
 	Host         string        `yaml:"host"`
 	Port         string        `yaml:"port"`
 	IdleTimeout  time.Duration `yaml:"idle-timeout"`
 	ReadTimeout  time.Duration `yaml:"read-timeout"`
 	WriteTimeout time.Duration `yaml:"write-timeout"`
+	API          APIConfig     `yaml:"api"`
 }
 
 // Load decodes a yaml configuration file

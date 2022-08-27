@@ -15,5 +15,19 @@ type UserStore interface {
 }
 
 type UserService interface {
-	Create() (UserID, error)
+	Create(*User) (UserID, error)
+}
+
+type userService struct {
+	store UserStore
+}
+
+func NewUserService(store UserStore) UserService {
+	return &userService{
+		store: store,
+	}
+}
+
+func (s *userService) Create(u *User) (UserID, error) {
+	return s.store.Insert(u)
 }
