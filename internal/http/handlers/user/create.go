@@ -10,9 +10,10 @@ import (
 func (u *UserHandler) Create(c *fiber.Ctx) error {
 	var req RequestBody
 	if err := c.BodyParser(&req); err != nil {
+		// u.logger.Printf("Recieved Body:\n%v", string(c.Body()))
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "invalid json",
-			"error":   err,
+			"error":   err.Error(),
 		})
 	}
 
@@ -26,7 +27,7 @@ func (u *UserHandler) Create(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "failed to create user",
-			"error":   err, // TODO: make this client appropriate
+			"error":   err.Error(), // TODO: make this client appropriate
 		})
 	}
 
