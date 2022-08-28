@@ -11,23 +11,31 @@ func (u *UserHandler) Create(c *fiber.Ctx) error {
 	var req RequestBody
 	if err := c.BodyParser(&req); err != nil {
 		// u.logger.Printf("Recieved Body:\n%v", string(c.Body()))
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "invalid json",
-			"error":   err.Error(),
+		return c.Status(fiber.StatusBadRequest).JSON(&ErrorsResponseBody{
+			Errors: []errors.FormattedError{
+				{
+					Message: "invalid json: " + err.Error(),
+				},
+			},
 		})
 	}
 
-	validationErrors := errors.ValidateRequestBody(&req)
+	validationErrors := errors.ValidateRequestBody(&req, errorFormatter)
 	if validationErrors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(validationErrors)
+		return c.Status(fiber.StatusBadRequest).JSON(&ErrorsResponseBody{
+			Errors: validationErrors,
+		})
 	}
 
 	user := userFromRequest(&req)
 	userID, err := u.service.Create(user)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "failed to create user",
-			"error":   err.Error(), // TODO: make this client appropriate
+		return c.Status(fiber.StatusInternalServerError).JSON(&ErrorsResponseBody{
+			Errors: []errors.FormattedError{
+				{
+					Message: "failed to create user",
+				},
+			},
 		})
 	}
 

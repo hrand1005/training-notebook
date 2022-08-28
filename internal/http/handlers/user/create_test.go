@@ -43,7 +43,7 @@ func TestCreate(t *testing.T) {
 			},
 			requestBody: []byte(`{"data":{"type":"user","attributes":{"first-name":"herb","last-name":"rand","email":"herb@yahoo.mail"}}}`),
 			wantStatus:  fiber.StatusInternalServerError,
-			wantBody:    []byte(`{"error":"Expected Error","message":"failed to create user"}`),
+			wantBody:    []byte(`{"errors":[{"message":"failed to create user"}]}`),
 		},
 		{
 			name: "Invalid json returns 400 and error response",
@@ -54,10 +54,10 @@ func TestCreate(t *testing.T) {
 			},
 			requestBody: []byte(`{"data":`),
 			wantStatus:  fiber.StatusBadRequest,
-			wantBody:    []byte(`{"error":"unexpected end of JSON input","message":"invalid json"}`),
+			wantBody:    []byte(`{"errors":[{"message":"invalid json: unexpected end of JSON input"}]}`),
 		},
 		{
-			name: "Invalid field values returns 400 and error response",
+			name: "First name too short returns 400 and error response",
 			userService: &mocks.UserService{
 				CreateStub: func(u *app.User) (app.UserID, error) {
 					return "TestUserID", nil
@@ -65,7 +65,73 @@ func TestCreate(t *testing.T) {
 			},
 			requestBody: []byte(`{"data":{"type":"user","attributes":{"first-name":"h","last-name":"rand","email":"herb@yahoo.mail"}}}`),
 			wantStatus:  fiber.StatusBadRequest,
-			wantBody:    []byte(`[{"invalid-field":"RequestBody.Data.Attributes.FirstName","tag":"min","value":"2"}]`),
+			wantBody:    []byte(`{"errors":[{"message":"field 'first-name' must be at least 2 characters"}]}`),
+		},
+		{
+			name: "First name too long returns 400 and error response",
+			userService: &mocks.UserService{
+				CreateStub: func(u *app.User) (app.UserID, error) {
+					return "TestUserID", nil
+				},
+			},
+			requestBody: []byte(`{"data":{"type":"user","attributes":{"first-name":"hherb123456herb123456herb123456erb123456","last-name":"rand","email":"herb@yahoo.mail"}}}`),
+			wantStatus:  fiber.StatusBadRequest,
+			wantBody:    []byte(`{"errors":[{"message":"field 'first-name' cannot exceed 32 characters"}]}`),
+		},
+		{
+			name: "Last name too short returns 400 and error response",
+			userService: &mocks.UserService{
+				CreateStub: func(u *app.User) (app.UserID, error) {
+					return "TestUserID", nil
+				},
+			},
+			requestBody: []byte(`{"data":{"type":"user","attributes":{"first-name":"herb","last-name":"r","email":"herb@yahoo.mail"}}}`),
+			wantStatus:  fiber.StatusBadRequest,
+			wantBody:    []byte(`{"errors":[{"message":"field 'last-name' must be at least 2 characters"}]}`),
+		},
+		{
+			name: "Last name too long returns 400 and error response",
+			userService: &mocks.UserService{
+				CreateStub: func(u *app.User) (app.UserID, error) {
+					return "TestUserID", nil
+				},
+			},
+			requestBody: []byte(`{"data":{"type":"user","attributes":{"first-name":"herb","last-name":"rrandrandrandrandrandrandrandrandrandrandrandrandand","email":"herb@yahoo.mail"}}}`),
+			wantStatus:  fiber.StatusBadRequest,
+			wantBody:    []byte(`{"errors":[{"message":"field 'last-name' cannot exceed 32 characters"}]}`),
+		},
+		{
+			name: "Email too long returns 400 and error response",
+			userService: &mocks.UserService{
+				CreateStub: func(u *app.User) (app.UserID, error) {
+					return "TestUserID", nil
+				},
+			},
+			requestBody: []byte(`{"data":{"type":"user","attributes":{"first-name":"herb","last-name":"rand","email":"hherbherbherbherbherbherbherbherbherbherbherbherbherberb@yahoo.mail"}}}`),
+			wantStatus:  fiber.StatusBadRequest,
+			wantBody:    []byte(`{"errors":[{"message":"field 'email' cannot exceed 32 characters"}]}`),
+		},
+		{
+			name: "Email invalid returns 400 and error response",
+			userService: &mocks.UserService{
+				CreateStub: func(u *app.User) (app.UserID, error) {
+					return "TestUserID", nil
+				},
+			},
+			requestBody: []byte(`{"data":{"type":"user","attributes":{"first-name":"herb","last-name":"rand","email":"hi"}}}`),
+			wantStatus:  fiber.StatusBadRequest,
+			wantBody:    []byte(`{"errors":[{"message":"invalid email address"}]}`),
+		},
+		{
+			name: "Multiple validation errors returns 400 and errors response",
+			userService: &mocks.UserService{
+				CreateStub: func(u *app.User) (app.UserID, error) {
+					return "TestUserID", nil
+				},
+			},
+			requestBody: []byte(`{"data":{"type":"user","attributes":{"first-name":"h","last-name":"rand","email":"hi"}}}`),
+			wantStatus:  fiber.StatusBadRequest,
+			wantBody:    []byte(`{"errors":[{"message":"field 'first-name' must be at least 2 characters"},{"message":"invalid email address"}]}`),
 		},
 	}
 

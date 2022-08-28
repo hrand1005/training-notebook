@@ -58,6 +58,12 @@
         "responses": {
           "201": {
             "$ref": "#/responses/usersResponse"
+          },
+          "400": {
+            "$ref": "#/responses/errorsResponse"
+          },
+          "500": {
+            "$ref": "#/responses/errorsResponse"
           }
         }
       }
@@ -81,6 +87,29 @@
         }
       },
       "x-go-package": "github.com/hrand1005/training-notebook/internal/http/handlers/user"
+    },
+    "ErrorsResponseBody": {
+      "type": "object",
+      "properties": {
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FormattedError"
+          },
+          "x-go-name": "Errors"
+        }
+      },
+      "x-go-package": "github.com/hrand1005/training-notebook/internal/http/handlers/user"
+    },
+    "FormattedError": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "x-go-name": "Message"
+        }
+      },
+      "x-go-package": "github.com/hrand1005/training-notebook/internal/http/errors"
     },
     "RequestBody": {
       "type": "object",
@@ -132,6 +161,15 @@
     }
   },
   "responses": {
+    "errorsResponse": {
+      "description": "returns errors in the response",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/ErrorsResponseBody"
+        }
+      }
+    },
     "userResponse": {
       "description": "returns a user in the response",
       "schema": {

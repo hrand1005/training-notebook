@@ -25,6 +25,10 @@
 // swagger:meta
 package user
 
+import (
+	"github.com/hrand1005/training-notebook/internal/http/errors"
+)
+
 // swagger:parameters createUser
 type userRequest struct {
 	// A single user
@@ -47,6 +51,16 @@ type usersResponse struct {
 	// in:body
 	Body []ResponseBody
 }
+
+// returns errors in the response
+// swagger:response errorsResponse
+type errorsResponse struct {
+	// api errors
+	// in:body
+	Body []ErrorsResponseBody
+}
+
+// --- EMBEDDED STRUCTS ---
 
 type Attributes struct {
 	FirstName string `json:"first-name" validate:"required,min=2,max=32"`
@@ -71,4 +85,8 @@ type RequestBody struct {
 
 type ResponseBody struct {
 	Data ResponseData `json:"data" validate:"required"`
+}
+
+type ErrorsResponseBody struct {
+	Errors []errors.FormattedError `json:"errors"`
 }

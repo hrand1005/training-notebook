@@ -1,10 +1,13 @@
 package user
 
 import (
+	"fmt"
 	"log"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/hrand1005/training-notebook/internal/app"
+	"github.com/hrand1005/training-notebook/internal/http/errors"
 )
 
 // UserHandler contains the service and logger required to
@@ -44,6 +47,8 @@ func (u *UserHandler) Register(r fiber.Router) {
 	//
 	// responses:
 	// 201: usersResponse
+	// 400: errorsResponse
+	// 500: errorsResponse
 	r.Post("/users", u.Create)
 }
 
@@ -67,5 +72,26 @@ func buildResponse(userID app.UserID, user *app.User) *ResponseBody {
 				Email:     user.Email,
 			},
 		},
+	}
+}
+
+// errorFormatter turns validation errors into client-readable messages.
+func errorFormatter(f validator.FieldError) errors.FormattedError {
+	switch f.Tag() {
+	case "min":
+		return errors.FormattedError{
+			Message: fmt.Sprintf("field '%s' must be at least %v characters", f.Field(), f.Param()),
+		}
+	case "max":
+		return errors.FormattedError{
+			Message: fmt.Sprintf("field '%s' cannot exceed %v characters", f.Field(), f.Param()),
+		}
+	case "email":
+		return errors.FormattedError{
+			Message: "invalid email address",
+		}
+	}
+	return errors.FormattedError{
+		Message: fmt.Sprintf("'%s' field is invalid", f.Field()),
 	}
 }
