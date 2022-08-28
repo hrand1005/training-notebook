@@ -2,6 +2,7 @@ package user
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/hrand1005/training-notebook/internal/http/errors"
 )
 
 // Create handles user creation by parsing the request into a User to
@@ -14,10 +15,13 @@ func (u *UserHandler) Create(c *fiber.Ctx) error {
 			"error":   err,
 		})
 	}
-	u.logger.Printf("Parsed request:\n%#v", req)
 
-	// create model from user request
-	user := UserFromRequest(&req)
+	validationErrors := errors.ValidateRequestBody(&req)
+	if validationErrors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(validationErrors)
+	}
+
+	user := userFromRequest(&req)
 	userID, err := u.service.Create(user)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -26,7 +30,6 @@ func (u *UserHandler) Create(c *fiber.Ctx) error {
 		})
 	}
 
-	// create response from model
-	resp := BuildResponse(userID, user)
+	resp := buildResponse(userID, user)
 	return c.Status(fiber.StatusCreated).JSON(resp)
 }

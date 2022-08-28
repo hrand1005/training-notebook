@@ -14,7 +14,7 @@ def step_impl(context, endpoint):
 
 @then('the server responds with status code "{status_code}"')
 def step_impl(context, status_code):
-    got_status = int(status_code)
-    expected_status = context.scenario.response.status_code 
-    assert got_status == expected_status, f'GOT: {got_status}\nEXPECTED: {expected_status}'
+    expected_status = int(status_code)
+    got_status = context.scenario.response.status_code 
+    assert got_status == expected_status, f'\nEXPECTED: {expected_status}\nGOT: {got_status}\n'
 

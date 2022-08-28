@@ -49,26 +49,26 @@ type usersResponse struct {
 }
 
 type Attributes struct {
-	FirstName string `json:"first-name"`
-	LastName  string `json:"last-name"`
-	Email     string `json:"email"`
+	FirstName string `json:"first-name" validate:"required,min=2,max=32"`
+	LastName  string `json:"last-name" validate:"required,min=2,max=32"`
+	Email     string `json:"email" validate:"required,email,min=6,max=32"`
 }
 
 type RequestData struct {
-	Type       string     `json:"type"`
-	Attributes Attributes `json:"attributes"`
+	Type       string     `json:"type" validate:"required"`
+	Attributes Attributes `json:"attributes" validate:"required"`
 }
 
 type ResponseData struct {
-	ID         string     `json:"id"`
-	Type       string     `json:"type"`
-	Attributes Attributes `json:"attributes"`
+	ID         string     `json:"id" validate:"required"`
+	Type       string     `json:"type" validate:"required"`
+	Attributes Attributes `json:"attributes" validate:"required"`
 }
 
 type RequestBody struct {
-	Data RequestData `json:"data"`
+	Data RequestData `json:"data" validate:"required"`
 }
 
 type ResponseBody struct {
-	Data ResponseData `json:"data"`
+	Data ResponseData `json:"data" validate:"required"`
 }

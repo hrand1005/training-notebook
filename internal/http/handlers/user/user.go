@@ -47,8 +47,8 @@ func (u *UserHandler) Register(r fiber.Router) {
 	r.Post("/users", u.Create)
 }
 
-// UserFromRequest creates a user entity from an api request.
-func UserFromRequest(req *RequestBody) *app.User {
+// userFromRequest creates a user entity from an api request.
+func userFromRequest(req *RequestBody) *app.User {
 	return &app.User{
 		FirstName: req.Data.Attributes.FirstName,
 		LastName:  req.Data.Attributes.LastName,
@@ -56,8 +56,8 @@ func UserFromRequest(req *RequestBody) *app.User {
 	}
 }
 
-// BuildResponse builds an api response from a user entity.
-func BuildResponse(userID app.UserID, user *app.User) *ResponseBody {
+// buildResponse builds an api response from a user entity.
+func buildResponse(userID app.UserID, user *app.User) *ResponseBody {
 	return &ResponseBody{
 		Data: ResponseData{
 			ID: string(userID),
