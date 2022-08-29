@@ -5,15 +5,17 @@ import (
 	"fmt"
 
 	"github.com/hrand1005/training-notebook/internal/app"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type UserDocument struct {
-	FirstName    string `bson:"first-name"`
-	LastName     string `bson:"last-name"`
-	Email        string `bson:"email"`
-	PasswordHash string `bson:"password-hash"`
+	ID           primitive.ObjectID `bson:"_id,omitempty"`
+	FirstName    string             `bson:"first-name"`
+	LastName     string             `bson:"last-name"`
+	Email        string             `bson:"email"`
+	PasswordHash string             `bson:"password-hash"`
 }
 
 type userStore struct {
@@ -32,7 +34,7 @@ func NewUserStore(h *mongoHandle) app.UserStore {
 	}
 }
 
-// Insert saves the user model in the UserStore.
+// Insert saves the user model in the user collection.
 // If successful, returns UserID, else returns error.
 func (s *userStore) Insert(u *app.User) (app.UserID, error) {
 	doc := userToDocument(u)
@@ -44,7 +46,31 @@ func (s *userStore) Insert(u *app.User) (app.UserID, error) {
 	return userIDFromResult(res), nil
 }
 
+// FindByID retrieves the user with the provided id from the user collection.
+// If successful, returns a user, otherwise returns nil and error.
+func (s *userStore) FindByID(id app.UserID) (*app.User, error) {
+	docID, _ := primitive.ObjectIDFromHex(string(id))
+	res := s.coll.FindOne(s.ctx, bson.M{"_id": docID})
+
+	var doc UserDocument
+	if err := res.Decode(&doc); err != nil {
+		return nil, fmt.Errorf("failed to find and decode user with id %v, err: %v", id, err)
+	}
+
+	return documentToUser(&doc), nil
+}
+
 /* --- INTERNAL USE ONLY --- */
+
+func documentToUser(d *UserDocument) *app.User {
+	return &app.User{
+		ID:           app.UserID(d.ID.Hex()),
+		FirstName:    d.FirstName,
+		LastName:     d.LastName,
+		Email:        d.Email,
+		PasswordHash: d.PasswordHash,
+	}
+}
 
 func userToDocument(u *app.User) *UserDocument {
 	return &UserDocument{

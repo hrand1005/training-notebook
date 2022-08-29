@@ -12,6 +12,7 @@ type User struct {
 
 type UserStore interface {
 	Insert(*User) (UserID, error)
+	FindByID(UserID) (*User, error)
 }
 
 type UserService interface {
@@ -30,4 +31,8 @@ func NewUserService(store UserStore) UserService {
 
 func (s *userService) Create(u *User) (UserID, error) {
 	return s.store.Insert(u)
+}
+
+func (s *userService) ReadByID(id UserID) (*User, error) {
+	return s.store.FindByID(id)
 }
