@@ -24,7 +24,7 @@ func TestCreate(t *testing.T) {
 		wantBody    []byte
 	}{
 		{
-			name: "Nominal case returns 201 and users response",
+			name: "Nominal case returns 201 and user response",
 			userService: &mocks.UserService{
 				CreateStub: func(u *app.User) (app.UserID, error) {
 					return "TestUserID", nil
@@ -32,7 +32,7 @@ func TestCreate(t *testing.T) {
 			},
 			requestBody: []byte(`{"data":{"type":"user","attributes":{"first-name":"herb","last-name":"rand","email":"herb@yahoo.mail"}}}`),
 			wantStatus:  fiber.StatusCreated,
-			wantBody:    []byte(`{"data":{"id":"TestUserID","type":"","attributes":{"first-name":"herb","last-name":"rand","email":"herb@yahoo.mail"}}}`),
+			wantBody:    []byte(`{"data":{"id":"TestUserID","type":"user","attributes":{"first-name":"herb","last-name":"rand","email":"herb@yahoo.mail"}}}`),
 		},
 		{
 			name: "Service error returns 500 and error response",

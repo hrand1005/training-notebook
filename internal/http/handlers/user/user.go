@@ -61,11 +61,14 @@ func userFromRequest(req *RequestBody) *app.User {
 	}
 }
 
+const RequestTypeUser = "user"
+
 // buildResponse builds an api response from a user entity.
 func buildResponse(userID app.UserID, user *app.User) *ResponseBody {
 	return &ResponseBody{
 		Data: ResponseData{
-			ID: string(userID),
+			ID:   string(userID),
+			Type: RequestTypeUser,
 			Attributes: Attributes{
 				FirstName: user.FirstName,
 				LastName:  user.LastName,
