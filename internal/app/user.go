@@ -17,6 +17,7 @@ type UserStore interface {
 
 type UserService interface {
 	Create(*User) (UserID, error)
+	ReadByID(id UserID) (*User, error)
 }
 
 type userService struct {
