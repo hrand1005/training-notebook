@@ -1,12 +1,18 @@
 package app
 
+import (
+	"fmt"
+)
+
 type UserID string
+
+const InvalidUserID = "0"
 
 type User struct {
 	ID           UserID
-	FirstName    string
-	LastName     string
-	Email        string
+	FirstName    string `validate:"required,min=2,max=32"`
+	LastName     string `validate:"required,min=2,max=32"`
+	Email        string `validate:"required,email,min=6,max=32"`
 	PasswordHash string
 }
 
@@ -31,6 +37,9 @@ func NewUserService(store UserStore) UserService {
 }
 
 func (s *userService) Create(u *User) (UserID, error) {
+	if errors := ValidateEntity(u); errors != nil {
+		return InvalidUserID, fmt.Errorf("UserService.Create.ValidateEntity: %w", errors)
+	}
 	return s.store.Insert(u)
 }
 

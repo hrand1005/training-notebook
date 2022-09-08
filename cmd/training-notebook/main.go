@@ -9,8 +9,8 @@ import (
 
 	"github.com/hrand1005/training-notebook/internal/app"
 	"github.com/hrand1005/training-notebook/internal/config"
-	"github.com/hrand1005/training-notebook/internal/httpserver"
-	"github.com/hrand1005/training-notebook/internal/httpserver/users"
+	"github.com/hrand1005/training-notebook/internal/httputil/server"
+	"github.com/hrand1005/training-notebook/internal/httputil/users"
 	"github.com/hrand1005/training-notebook/internal/mongodb"
 )
 
@@ -37,13 +37,13 @@ func main() {
 	userService := app.NewUserService(userStore)
 	userHandler := users.NewUserHandler(userService, log.Default())
 
-	server, err := httpserver.BuildServer(conf.Server)
+	srv, err := server.New(conf.Server)
 	if err != nil {
 		log.Fatalf("failed to build server: %v", err)
 	}
 
-	server.RegisterHandler(userHandler)
+	srv.RegisterHandler(userHandler)
 
 	ctx := context.Background()
-	server.Start(ctx)
+	srv.Start(ctx)
 }

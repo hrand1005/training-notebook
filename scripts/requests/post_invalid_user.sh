@@ -13,7 +13,7 @@ echo "$USAGE"
 echo ""
 
 # invalid first name too short
-# curl -d '{"data":{"type": "user","attributes":{"first-name":"h","last-name":"rand","email":"herb@yahoo.mail"}}}' -H 'Content-Type: application/json' -X POST http://localhost:5000/api/v1/users
+curl -d '{"data":{"type": "user","attributes":{"first-name":"h","last-name":"rand","email":"herb@yahoo.mail"}}}' -H 'Content-Type: application/json' -X POST http://localhost:5000/api/v1/users
 #
 # # invalid first name too long
 # curl -d '{"data":{"type": "user","attributes":{"first-name":"hehehehehehehehehehehehehehehehehe","last-name":"rand","email":"herb@yahoo.mail"}}}' -H 'Content-Type: application/json' -X POST http://localhost:5000/api/v1/users
