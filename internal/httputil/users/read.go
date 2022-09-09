@@ -5,7 +5,6 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/hrand1005/training-notebook/internal/app"
-	"github.com/hrand1005/training-notebook/internal/httputil/apierror"
 )
 
 // ReadByID handles user reads by parsing the UserID as a URL param and
@@ -18,7 +17,7 @@ func (u *UserHandler) ReadByID(c *fiber.Ctx) error {
 		u.logger.Printf("ReadByID: %v", err)
 		if errors.Is(err, app.ErrNotFound) {
 			return c.Status(fiber.StatusNotFound).JSON(&ErrorsResponseBody{
-				Errors: []apierror.FormattedError{
+				Errors: []FormattedError{
 					{
 						Message: "user not found",
 					},
@@ -26,7 +25,7 @@ func (u *UserHandler) ReadByID(c *fiber.Ctx) error {
 			})
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(&ErrorsResponseBody{
-			Errors: []apierror.FormattedError{
+			Errors: []FormattedError{
 				{
 					Message: app.ErrServiceFailure.Error(),
 				},

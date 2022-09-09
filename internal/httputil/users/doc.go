@@ -25,10 +25,6 @@
 // swagger:meta
 package users
 
-import (
-	"github.com/hrand1005/training-notebook/internal/httputil/apierror"
-)
-
 // swagger:parameters createUser
 type userRequest struct {
 	// A single user
@@ -88,5 +84,9 @@ type ResponseBody struct {
 }
 
 type ErrorsResponseBody struct {
-	Errors []apierror.FormattedError `json:"errors"`
+	Errors []FormattedError `json:"errors"`
+}
+
+type FormattedError struct {
+	Message string `json:"message"`
 }

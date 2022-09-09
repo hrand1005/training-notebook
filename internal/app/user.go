@@ -37,8 +37,8 @@ func NewUserService(store UserStore) UserService {
 }
 
 func (s *userService) Create(u *User) (UserID, error) {
-	if errors := ValidateEntity(u); errors != nil {
-		return InvalidUserID, fmt.Errorf("UserService.Create.ValidateEntity: %w", errors)
+	if err := ValidateEntity(u); err != nil {
+		return InvalidUserID, fmt.Errorf("UserService.Create.ValidateEntity: %w", err)
 	}
 	return s.store.Insert(u)
 }

@@ -43,7 +43,7 @@ func TestCreate(t *testing.T) {
 			},
 			requestBody: []byte(`{"data":{"type":"user","attributes":{"first-name":"herb","last-name":"rand","email":"herb@yahoo.mail"}}}`),
 			wantStatus:  fiber.StatusInternalServerError,
-			wantBody:    []byte(`{"errors":[{"message":"failed to create user"}]}`),
+			wantBody:    []byte(`{"errors":[{"message":"the service failed due to internal reasons"}]}`),
 		},
 		{
 			name: "Invalid json returns 400 and error response",
@@ -62,7 +62,6 @@ func TestCreate(t *testing.T) {
 		// 	name: "First name too short returns 400 and error response",
 		// 	userService: &mocks.UserService{
 		// 		CreateStub: func(u *app.User) (app.UserID, error) {
-		// ----------- ADD VALIDATION HERE? -----------
 		// 			if err := app.ValidateEntity(u); err != nil {
 		// 				return app.InvalidUserID, err
 		// 			}
@@ -73,7 +72,7 @@ func TestCreate(t *testing.T) {
 		// 	wantStatus:  fiber.StatusBadRequest,
 		// 	wantBody:    []byte(`{"errors":[{"message":"field 'first-name' must be at least 2 characters"}]}`),
 		// },
-
+		//
 		// {
 		// 	name: "First name too long returns 400 and error response",
 		// 	userService: &mocks.UserService{

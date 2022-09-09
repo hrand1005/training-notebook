@@ -86,7 +86,7 @@
           "x-go-name": "LastName"
         }
       },
-      "x-go-package": "github.com/hrand1005/training-notebook/internal/http/handlers/user"
+      "x-go-package": "github.com/hrand1005/training-notebook/internal/httputil/users"
     },
     "ErrorsResponseBody": {
       "type": "object",
@@ -99,7 +99,7 @@
           "x-go-name": "Errors"
         }
       },
-      "x-go-package": "github.com/hrand1005/training-notebook/internal/http/handlers/user"
+      "x-go-package": "github.com/hrand1005/training-notebook/internal/httputil/users"
     },
     "FormattedError": {
       "type": "object",
@@ -109,7 +109,7 @@
           "x-go-name": "Message"
         }
       },
-      "x-go-package": "github.com/hrand1005/training-notebook/internal/http/errors"
+      "x-go-package": "github.com/hrand1005/training-notebook/internal/httputil/users"
     },
     "RequestBody": {
       "type": "object",
@@ -118,7 +118,7 @@
           "$ref": "#/definitions/RequestData"
         }
       },
-      "x-go-package": "github.com/hrand1005/training-notebook/internal/http/handlers/user"
+      "x-go-package": "github.com/hrand1005/training-notebook/internal/httputil/users"
     },
     "RequestData": {
       "type": "object",
@@ -131,7 +131,7 @@
           "x-go-name": "Type"
         }
       },
-      "x-go-package": "github.com/hrand1005/training-notebook/internal/http/handlers/user"
+      "x-go-package": "github.com/hrand1005/training-notebook/internal/httputil/users"
     },
     "ResponseBody": {
       "type": "object",
@@ -140,7 +140,7 @@
           "$ref": "#/definitions/ResponseData"
         }
       },
-      "x-go-package": "github.com/hrand1005/training-notebook/internal/http/handlers/user"
+      "x-go-package": "github.com/hrand1005/training-notebook/internal/httputil/users"
     },
     "ResponseData": {
       "type": "object",
@@ -157,7 +157,7 @@
           "x-go-name": "Type"
         }
       },
-      "x-go-package": "github.com/hrand1005/training-notebook/internal/http/handlers/user"
+      "x-go-package": "github.com/hrand1005/training-notebook/internal/httputil/users"
     }
   },
   "responses": {
