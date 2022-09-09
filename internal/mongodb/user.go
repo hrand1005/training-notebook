@@ -13,10 +13,10 @@ import (
 
 type UserDocument struct {
 	ID           primitive.ObjectID `bson:"_id,omitempty"`
-	FirstName    string             `bson:"first-name"`
-	LastName     string             `bson:"last-name"`
-	Email        string             `bson:"email"`
-	PasswordHash string             `bson:"password-hash"`
+	FirstName    string             `bson:"first-name,omitempty"`
+	LastName     string             `bson:"last-name,omitempty"`
+	Email        string             `bson:"email,omitempty"`
+	PasswordHash string             `bson:"password-hash,omitempty"`
 }
 
 type userStore struct {
@@ -41,7 +41,7 @@ func (s *userStore) Insert(u *app.User) (app.UserID, error) {
 	doc := userToDocument(u)
 	res, err := s.coll.InsertOne(s.ctx, doc)
 	if err != nil {
-		return "", fmt.Errorf("failed to insert user: %v", err)
+		return app.InvalidUserID, fmt.Errorf("failed to insert user: %v", err)
 	}
 
 	return userIDFromResult(res), nil
@@ -66,6 +66,27 @@ func (s *userStore) FindByID(id app.UserID) (*app.User, error) {
 	}
 
 	return documentToUser(&doc), nil
+}
+
+// UpdateByID updates the user identified by the provided id with the fields in the
+// provided user struct. If successful, returns nil, otherwise returns error.
+func (s *userStore) UpdateByID(id app.UserID, u *app.User) error {
+	docID, err := primitive.ObjectIDFromHex(string(id))
+	doc := userToDocument(u)
+	// TODO: Is it possible to update only the provided fields?
+	res, err := s.coll.UpdateByID(s.ctx, docID, bson.M{
+		"$set": doc,
+	})
+
+	if err != nil {
+		return fmt.Errorf("%w: %v", app.ErrServiceFailure, err)
+	}
+
+	if res.MatchedCount == 0 {
+		return app.ErrNotFound
+	}
+
+	return nil
 }
 
 /* --- INTERNAL USE ONLY --- */

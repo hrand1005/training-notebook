@@ -2,6 +2,7 @@ package mongodb
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"testing"
 
@@ -55,7 +56,7 @@ func TestInsert(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			id, err := tc.store.Insert(tc.user)
-			gotID := id != ""
+			gotID := id != app.InvalidUserID
 			gotErr := err != nil
 
 			if tc.wantID != gotID {
@@ -134,6 +135,72 @@ func TestFindByID(t *testing.T) {
 
 			if tc.wantErr != gotErr {
 				t.Fatalf("want err: %v\ngot err: %v\nerr: %v", tc.wantErr, gotErr, err)
+			}
+		})
+	}
+}
+
+// TestUpdateByID tests the mongo implementation of the UserStore's Insert() method.
+func TestUpdateByID(t *testing.T) {
+	handle, err := New(TestURI, TestDB)
+	if err != nil {
+		t.Fatalf("failed to initialize test db handle: %v", err)
+	}
+	defer handle.Delete()
+	defer handle.Close()
+
+	validStore := newValidUserStore(handle)
+	invalidStore := newInvalidUserStore(handle)
+
+	tests := []struct {
+		name        string
+		store       app.UserStore
+		userIDValid bool
+		user        *app.User
+		wantErr     error
+	}{
+		{
+			name:        "Nominal case returns nil error",
+			store:       validStore,
+			userIDValid: true,
+			user: &app.User{
+				FirstName: "yorbus",
+			},
+			wantErr: nil,
+		},
+		{
+			name:        "Invalid user id case returns error",
+			store:       validStore,
+			userIDValid: false,
+			user: &app.User{
+				FirstName: "yorbus",
+			},
+			wantErr: app.ErrNotFound,
+		},
+		{
+			name:        "Invalid user store case returns error",
+			store:       invalidStore,
+			userIDValid: true,
+			user: &app.User{
+				FirstName: "yorbus",
+			},
+			wantErr: app.ErrServiceFailure,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			// add empty user
+			id, _ := tc.store.Insert(&app.User{})
+
+			if !tc.userIDValid {
+				id = app.InvalidUserID
+			}
+
+			// attempt to update the inserted user
+			gotErr := tc.store.UpdateByID(id, tc.user)
+
+			if !errors.Is(gotErr, tc.wantErr) {
+				t.Fatalf("want err: %v\ngot err: %v", tc.wantErr, gotErr)
 			}
 		})
 	}

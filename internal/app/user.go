@@ -18,6 +18,7 @@ type User struct {
 
 type UserStore interface {
 	Insert(*User) (UserID, error)
+	UpdateByID(UserID, *User) error
 	FindByID(UserID) (*User, error)
 }
 
