@@ -71,7 +71,7 @@ func (s *userStore) FindByID(id app.UserID) (*app.User, error) {
 // UpdateByID updates the user identified by the provided id with the fields in the
 // provided user struct. If successful, returns nil, otherwise returns error.
 func (s *userStore) UpdateByID(id app.UserID, u *app.User) error {
-	docID, err := primitive.ObjectIDFromHex(string(id))
+	docID, _ := primitive.ObjectIDFromHex(string(id))
 	doc := userToDocument(u)
 	// TODO: Is it possible to update only the provided fields?
 	res, err := s.coll.UpdateByID(s.ctx, docID, bson.M{
@@ -83,6 +83,23 @@ func (s *userStore) UpdateByID(id app.UserID, u *app.User) error {
 	}
 
 	if res.MatchedCount == 0 {
+		return app.ErrNotFound
+	}
+
+	return nil
+}
+
+// DeleteByID removes the user identified by the provided id from the database.
+// If successful, returns nil, otherwise returns error.
+func (s *userStore) DeleteByID(id app.UserID) error {
+	docID, _ := primitive.ObjectIDFromHex(string(id))
+
+	res, err := s.coll.DeleteOne(s.ctx, bson.M{"_id": docID})
+	if err != nil {
+		return fmt.Errorf("%w: %v", app.ErrServiceFailure, err)
+	}
+
+	if res.DeletedCount == 0 {
 		return app.ErrNotFound
 	}
 

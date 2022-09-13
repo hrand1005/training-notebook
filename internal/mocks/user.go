@@ -8,6 +8,7 @@ type UserService struct {
 	CreateStub     func(*app.User) (app.UserID, error)
 	ReadByIDStub   func(app.UserID) (*app.User, error)
 	UpdateByIDStub func(app.UserID, *app.User) error
+	DeleteByIDStub func(app.UserID) error
 }
 
 func (s *UserService) Create(u *app.User) (app.UserID, error) {
@@ -20,4 +21,8 @@ func (s *UserService) ReadByID(id app.UserID) (*app.User, error) {
 
 func (s *UserService) UpdateByID(id app.UserID, u *app.User) error {
 	return s.UpdateByIDStub(id, u)
+}
+
+func (s *UserService) DeleteByID(id app.UserID) error {
+	return s.DeleteByIDStub(id)
 }

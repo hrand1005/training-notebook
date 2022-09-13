@@ -48,6 +48,7 @@ func (u *UserHandler) Register(r fiber.Router) {
 	// 500: errorsResponse
 	r.Post("/users", u.Create)
 	r.Get("/users/:userID", u.ReadByID)
+	r.Delete("/users/:userID", u.DeleteByID)
 }
 
 // userFromRequest creates a user entity from an api request.

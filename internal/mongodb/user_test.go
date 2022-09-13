@@ -140,7 +140,7 @@ func TestFindByID(t *testing.T) {
 	}
 }
 
-// TestUpdateByID tests the mongo implementation of the UserStore's Insert() method.
+// TestUpdateByID tests the mongo implementation of the UserStore's UpdateBYID() method.
 func TestUpdateByID(t *testing.T) {
 	handle, err := New(TestURI, TestDB)
 	if err != nil {
@@ -198,6 +198,67 @@ func TestUpdateByID(t *testing.T) {
 
 			// attempt to update the inserted user
 			gotErr := tc.store.UpdateByID(id, tc.user)
+
+			if !errors.Is(gotErr, tc.wantErr) {
+				t.Fatalf("want err: %v\ngot err: %v", tc.wantErr, gotErr)
+			}
+		})
+	}
+}
+
+// TestDeleteByID tests the mongo implementation of the UserStore's DeleteByID() method.
+func TestDeleteByID(t *testing.T) {
+	handle, err := New(TestURI, TestDB)
+	if err != nil {
+		t.Fatalf("failed to initialize test db handle: %v", err)
+	}
+	defer handle.Delete()
+	defer handle.Close()
+
+	testUser := &app.User{
+		FirstName: "test-first-name",
+		LastName:  "test-last-name",
+		Email:     "test-email@yahoo.mail",
+	}
+
+	validStore := newValidUserStore(handle)
+	testUserID, err := validStore.Insert(testUser)
+	if err != nil {
+		t.Fatalf("failed to initialize test user: %v", err)
+	}
+
+	testUser.ID = testUserID
+
+	invalidStore := newInvalidUserStore(handle)
+
+	tests := []struct {
+		name    string
+		store   app.UserStore
+		userID  app.UserID
+		wantErr error
+	}{
+		{
+			name:    "Nominal case returns nil error",
+			store:   validStore,
+			userID:  testUserID,
+			wantErr: nil,
+		},
+		{
+			name:    "Invalid user id case returns error",
+			store:   validStore,
+			userID:  "invalid-id",
+			wantErr: app.ErrNotFound,
+		},
+		{
+			name:    "Invalid user store case returns error",
+			store:   invalidStore,
+			userID:  testUserID,
+			wantErr: app.ErrServiceFailure,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			gotErr := tc.store.DeleteByID(tc.userID)
 
 			if !errors.Is(gotErr, tc.wantErr) {
 				t.Fatalf("want err: %v\ngot err: %v", tc.wantErr, gotErr)

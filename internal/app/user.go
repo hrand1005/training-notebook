@@ -20,12 +20,14 @@ type UserStore interface {
 	Insert(*User) (UserID, error)
 	UpdateByID(UserID, *User) error
 	FindByID(UserID) (*User, error)
+	DeleteByID(UserID) error
 }
 
 type UserService interface {
 	Create(*User) (UserID, error)
 	ReadByID(UserID) (*User, error)
 	UpdateByID(UserID, *User) error
+	DeleteByID(UserID) error
 }
 
 type userService struct {
@@ -54,4 +56,8 @@ func (s *userService) UpdateByID(id UserID, u *User) error {
 		return fmt.Errorf("UserService.UpdateByID.ValidateEntity: %w", err)
 	}
 	return s.store.UpdateByID(id, u)
+}
+
+func (s *userService) DeleteByID(id UserID) error {
+	return s.store.DeleteByID(id)
 }
