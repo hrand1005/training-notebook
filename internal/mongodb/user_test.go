@@ -9,8 +9,8 @@ import (
 	"github.com/hrand1005/training-notebook/internal/app"
 )
 
-// TestInsert tests the mongo implementation of the UserStore's Insert() method.
-func TestInsert(t *testing.T) {
+// TestInsertUser tests the mongo implementation of the UserStore's Insert() method.
+func TestInsertUser(t *testing.T) {
 	handle, err := New(TestURI, TestDB)
 	if err != nil {
 		t.Fatalf("failed to initialize test db handle: %v", err)
